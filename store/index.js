@@ -1,11 +1,13 @@
 import consul from '~/lib/consul/consul'
 
 export const GET_DATACENTERS = 'GET_DATACENTERS'
+export const GET_NODES = 'GET_NODES'
 export const SET_DATACENTER = 'SET_DATACENTER'
 
 export const state = () => ({
   sidebar: false,
   datacenters: [],
+  nodes: [],
   selectedDatacenter: ''
 })
 
@@ -18,6 +20,10 @@ export const mutations = {
     state.datacenters = [ ...data ]
   },
 
+  GET_NODES (state, data) {
+    state.nodes = [ ...data ]
+  },
+
   SET_DATACENTER (state, data) {
     state.selectedDatacenter = data
   }
@@ -28,10 +34,15 @@ export const actions = {
     const datacenters = consul.coordinate.getDatacenters()
       .then(res => {
         commit(GET_DATACENTERS, res.datacenters)
-        // commit(GET_DATACENTERS, ['dc1-fr', 'dc1-nl'])
         commit(SET_DATACENTER, res.datacenters[0])
       })
-    return Promise.all([datacenters])
+
+    const nodes = consul.coordinate.getNodes()
+      .then(res => {
+        commit(GET_NODES, res.nodes)
+      })
+
+    return Promise.all([datacenters, nodes])
   },
   selectDatacenter ({ commit }, dc) {
     commit(SET_DATACENTER, dc)

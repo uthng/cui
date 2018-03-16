@@ -26,6 +26,10 @@ module.exports = {
   /*
   ** Build configuration
   */
+  axios: {
+    proxyHeaders: false,
+    credentials: false
+  },
   build: {
     vendor: [
       '~/plugins/vuetify.js',
