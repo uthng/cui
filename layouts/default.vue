@@ -9,8 +9,8 @@
     >
       <v-list>
         <v-list-tile
-          router
-          :to="item.to"
+          nuxt
+          :href="item.href"
           :key="i"
           v-for="(item, i) in items"
           exact
@@ -76,8 +76,8 @@
         drawer: true,
         fixed: false,
         items: [
-          { icon: 'apps', title: 'Nodes', to: '/' },
-          { icon: 'apps', title: 'K/V', to: '/kv' },
+          { icon: 'apps', title: 'Nodes', href: '/' },
+          { icon: 'apps', title: 'K/V', href: '/kv' },
           { icon: 'bubble_chart', title: 'ACL', to: '/acl' }
         ],
         miniVariant: false,
