@@ -33,8 +33,7 @@ module.exports = {
   build: {
     vendor: [
       '~/plugins/vuetify.js',
-      'axios',
-      'jsoneditor'
+      'axios'
     ],
     extractCSS: true
     /*
