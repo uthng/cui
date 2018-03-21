@@ -3,7 +3,11 @@
     <div class="item-key" :class="getClassDepth(currentDepth)">{{keyString}}: </div>
     <input v-if="modifiable" class="item-value" :class="getValueType(data)" v-model="valueString" @keyup.enter="onUpdateData" @blur="onUpdateData">
     <div v-else class="item-value" :class="getValueType(data)">{{ valueFormed }}</div>
-    <div v-show="error">{{ error }}</div>
+    <div class="item-icons">
+    <v-btn icon small class="ma-0 pa-0"><v-icon small>create</v-icon></v-btn>
+    <v-btn icon small class="ma-0 pa-0"><v-icon small>add</v-icon></v-btn>
+    <v-btn icon small class="ma-0 pa-0"><v-icon small>delete</v-icon></v-btn>
+    </div>
   </div>
 
 <!--
@@ -101,7 +105,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 
 /* div horizontally: */
 /* parent overflow: hidden, child: float left */
@@ -115,6 +119,7 @@ export default {
 .item-key {
   /*float: left;*/
   flex: 1;
+  justify-content: flex-start
 }
 
 .item-value {
@@ -123,6 +128,15 @@ export default {
   word-break: break-all;
   text-align: justify;
   float: right;
+  padding-right: 40px;
+  justify-content: center;
+}
+
+.item-icons {
+  flex: 1;
+  justify-content: flex-end;
+  margin-right: 10px;
+  margin-top: -5px;
 }
 
 </style>

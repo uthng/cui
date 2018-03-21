@@ -5,6 +5,11 @@
         <span :class="{opened: isOpen()}" class="item-key item-key-with-chevron">{{getKey(data)}}</span>
         <span class="item-hint" v-show="!isOpen() && data.children.length === 1"> ({{data.children.length}} {{ isObject(data) ? 'property' : 'item' }})</span>
         <span class="item-hint" v-show="!isOpen() && data.children.length !== 1"> ({{data.children.length}} {{ isObject(data) ? 'properties' : 'items' }})</span>
+        <span class="item-actions">
+          <v-btn icon small class="ma-0 pa-0"><v-icon small>create</v-icon></v-btn>
+          <v-btn icon small class="ma-0 pa-0"><v-icon small>add</v-icon></v-btn>
+          <v-btn icon small class="ma-0 pa-0"><v-icon small>delete</v-icon></v-btn>
+        </span>
       </div>
     </div>
     <tree-view-item :key="getKey(child)" :max-depth="maxDepth" :current-depth="currentDepth+1" v-show="isOpen()" v-for="child in data.children" :data="child" :modifiable="modifiable" @change-data="onChangeData"></tree-view-item>
@@ -117,6 +122,12 @@
 
 .item-hint {
   color: #ccc
+}
+
+.item-actions {
+  position: absolute;
+  right: 10px;
+  top: -5px;
 }
 
 .depth-0 {
