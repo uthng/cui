@@ -1,9 +1,9 @@
 <template>
-  <div>
-    <span class="tree-view-item-key">{{keyString}}</span>
-    <input v-if="modifiable" class="tree-view-item-value" :class="getValueType(data)" v-model="valueString" @keyup.enter="onUpdateData" @blur="onUpdateData">
-    <span v-else class="tree-view-item-value" :class="getValueType(data)">{{ valueFormed }}</span>
-    <span v-show="error">{{ error }}</span>
+  <div class="item-key-value">
+    <div class="item-key" :class="getClassDepth(currentDepth)">{{keyString}}: </div>
+    <input v-if="modifiable" class="item-value" :class="getValueType(data)" v-model="valueString" @keyup.enter="onUpdateData" @blur="onUpdateData">
+    <div v-else class="item-value" :class="getValueType(data)">{{ valueFormed }}</div>
+    <div v-show="error">{{ error }}</div>
   </div>
 
 <!--
@@ -21,7 +21,7 @@ import _ from 'lodash'
 
 export default {
   name: 'tree-view-item',
-  props: ['data', 'modifiable', 'key-string'],
+  props: ['data', 'modifiable', 'key-string', 'current-depth'],
   data: function () {
     return {
       valueString: this.data && this.data.toString(),
@@ -75,7 +75,7 @@ export default {
       }
       return value
     },
-    getValueType: function (value, prefix = 'tree-view-item-value-') {
+    getValueType: function (value, prefix = 'item-value-') {
       if (_.isNumber(value)) {
         return prefix + 'number'
       }
@@ -92,7 +92,37 @@ export default {
         return prefix + 'string'
       }
       return prefix + 'unknown'
+    },
+    getClassDepth: function (depth) {
+        return 'depth-' + depth
     }
+
   }
 }
 </script>
+
+<style scoped>
+
+/* div horizontally: */
+/* parent overflow: hidden, child: float left */
+/* or usung flex */
+.item-key-value {
+  display: flex;
+  flex-direction: row;
+  /*overflow: hidden;*/
+}
+
+.item-key {
+  /*float: left;*/
+  flex: 1;
+}
+
+.item-value {
+  white-space: normal;
+  width: 100%;
+  word-break: break-all;
+  text-align: justify;
+  float: right;
+}
+
+</style>

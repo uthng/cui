@@ -1,31 +1,15 @@
 <template>
-  <div class="tree-view-item">
-    <div v-if="isObject(data) || isArray(data)" class="tree-view-item-leaf">
-      <div class="tree-view-item-node" @click.stop="toggleOpen()" >
-        <span :class="{opened: isOpen()}" class="tree-view-item-key tree-view-item-key-with-chevron">{{getKey(data)}}</span>
-        <span class="tree-view-item-hint" v-show="!isOpen() && data.children.length === 1"> ({{data.children.length}} {{ isObject(data) ? 'property' : 'item' }})</span>
-        <span class="tree-view-item-hint" v-show="!isOpen() && data.children.length !== 1"> ({{data.children.length}} {{ isObject(data) ? 'properties' : 'items' }})</span>
+  <div v-if="isObject(data) || isArray(data)">
+    <div class="item item-leaf" :class="getClassDepth(currentDepth)">
+      <div class="item-node" @click.stop="toggleOpen()" >
+        <span :class="{opened: isOpen()}" class="item-key item-key-with-chevron">{{getKey(data)}}</span>
+        <span class="item-hint" v-show="!isOpen() && data.children.length === 1"> ({{data.children.length}} {{ isObject(data) ? 'property' : 'item' }})</span>
+        <span class="item-hint" v-show="!isOpen() && data.children.length !== 1"> ({{data.children.length}} {{ isObject(data) ? 'properties' : 'items' }})</span>
       </div>
-      <tree-view-item :key="getKey(child)" :max-depth="maxDepth" :current-depth="currentDepth+1" v-show="isOpen()" v-for="child in data.children" :data="child" :modifiable="modifiable" @change-data="onChangeData"></tree-view-item>
     </div>
-    <tree-view-item-value v-if="isValue(data)" class="tree-view-item-leaf" :key-string="getKey(data)" :data="data.value" :modifiable="modifiable" @change-data="onChangeData">
-    </tree-view-item-value>
-  </div>
-
-<!--  <div v-if="isObject(data) || isArray(data)">
-    <v-list-tile @click="">
-      <v-list-tile-action>
-        <v-icon>play_arrow</v-icon>
-      </v-list-tile-action>
-      <v-list-tile-content>
-        <v-list-tile-title v-text="getKey(data)"></v-list-tile-title>
-      </v-list-tile-content>
-    </v-list-tile>
     <tree-view-item :key="getKey(child)" :max-depth="maxDepth" :current-depth="currentDepth+1" v-show="isOpen()" v-for="child in data.children" :data="child" :modifiable="modifiable" @change-data="onChangeData"></tree-view-item>
   </div>
-  <tree-view-item-value v-else-if="isValue(data)" :key-string="getKey(data)" :data="data.value" :modifiable="modifiable" @change-data="onChangeData">
-  </tree-view-item-value>
--->
+  <tree-view-item-value v-else-if="isValue(data)" class="item item-leaf" :key-string="getKey(data)" :data="data.value" :modifiable="modifiable" :current-depth="currentDepth" @change-data="onChangeData"></tree-view-item-value>
 </template>
 
 <script>
@@ -75,58 +59,108 @@
       onChangeData: function (path, value) {
         path = _.concat(this.data.key, path)
         this.$emit('change-data', path, value)
+      },
+      getClassDepth: function (depth) {
+        return 'depth-' + depth
       }
     }
   }
 </script>
 
-<style scoped>
+<style>
 
-.tree-view-item {
+.item {
   font-family: monaco, monospace;
   font-size: 14px;
-  margin-left: 18px;
+  /*margin-left: 15px;*/
+  padding: 5px;
+
 }
 
-.tree-view-item-node {
+.item-node {
   cursor: pointer;
   position: relative;
   white-space: nowrap;
 }
 
-.tree-view-item-leaf {
+.item-leaf {
   white-space: nowrap;
 }
 
-.tree-view-item-key {
+.item-key {
   font-weight: bold;
 }
 
-.tree-view-item-key-with-chevron {
-  padding-left: 14px;
+.item-key-with-chevron {
+  padding-left: 5px;
 }
 
 
-.tree-view-item-key-with-chevron.opened::before {
-    top:4px;
+.item-key-with-chevron.opened::before {
+    top:0px;
     transform: rotate(90deg);
     -webkit-transform: rotate(90deg);
 }
 
-.tree-view-item-key-with-chevron::before {
+.item-key-with-chevron::before {
     color: #444;
     content: '\25b6';
-    font-size: 10px;
-    left: 1px;
+    font-size: 15px;
+    left: -10px;
     position: absolute;
-    top: 3px;
+    top: -1px;
     transition: -webkit-transform .1s ease;
     transition: transform .1s ease;
     transition: transform .1s ease, -webkit-transform .1s ease;
     -webkit-transition: -webkit-transform .1s ease;
 }
 
-.tree-view-item-hint {
+.item-hint {
   color: #ccc
 }
+
+.depth-0 {
+  padding-left:0px;
+}
+
+.depth-1 {
+  padding-left:15px;
+}
+
+.depth-2 {
+  padding-left:35px
+}
+
+.depth-3 {
+  padding-left:55px
+}
+
+.depth-4 {
+  padding-left:75px
+}
+
+.depth-5 {
+  padding-left:95px
+}
+
+.depth-6 {
+  padding-left:115px
+}
+
+.depth-7 {
+  padding-left:135px
+}
+
+.depth-8 {
+  padding-left:155px
+}
+
+.depth-9 {
+  padding-left:175px
+}
+
+.depth-10 {
+  padding-left:195px
+}
+
 </style>
