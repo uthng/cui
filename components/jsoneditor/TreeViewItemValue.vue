@@ -104,7 +104,8 @@ export default {
         return null
       }
       if (_.isString(value)) {
-        return '"' + value + '"'
+        // return '"' + value + '"'
+        return value
       }
       return value
     },
@@ -158,6 +159,7 @@ export default {
   text-align: justify;
   float: right;
   padding-right: 40px;
+  padding-left: 10px;
   justify-content: center;
 }
 
