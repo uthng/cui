@@ -1,22 +1,50 @@
 <template>
   <div class="item-key-value">
-    <div class="item-key" :class="getClassDepth(currentDepth)">{{keyString}}: </div>
+    <div class="item-key" :class="getClassDepth(currentDepth)">{{keyString}}:</div>
     <input v-if="modifiable" class="item-value" :class="getValueType(data)" v-model="valueString" @keyup.enter="onUpdateData" @blur="onUpdateData">
     <div v-else class="item-value" :class="getValueType(data)">{{ valueFormed }}</div>
     <div class="item-icons">
-    <v-btn icon small class="ma-0 pa-0"><v-icon small>create</v-icon></v-btn>
+    <v-btn icon small class="ma-0 pa-0" @click.stop="dialogModifyKeyValue = !dialogModifyKeyValue"><v-icon small>create</v-icon></v-btn>
     <v-btn icon small class="ma-0 pa-0"><v-icon small>add</v-icon></v-btn>
     <v-btn icon small class="ma-0 pa-0"><v-icon small>delete</v-icon></v-btn>
     </div>
+    <v-dialog v-model="dialogModifyKeyValue" persistent max-width="700px">
+      <v-card>
+        <v-card-title>
+          <span class="headline">Modify Key Value</span>
+        </v-card-title>
+        <v-card-text>
+          <v-container fluid class="px-3">
+            <v-layout row wrap>
+              <v-flex xs12>
+                <v-text-field
+                  name="key-path"
+                  label="Key"
+                  :value="path"
+                  disabled
+                ></v-text-field>
+              </v-flex>
+              <v-flex xs12>
+                <v-text-field
+                  name="key-value"
+                  label="Value"
+                  textarea
+                  :value="valueFormed"
+                  rows="10"
+                ></v-text-field>
+              </v-flex>
+            </v-layout>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" flat @click.stop="dialogModifyKeyValue=false">Close</v-btn>
+          <v-btn color="primary" flat @click.stop="dialogModifyKeyValue=false">Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </div>
 
-<!--
-  <v-list-tile @click="">
-    <v-list-tile-content>
-      <v-list-tile-title>{{ keyString }} {{ valueFormed }}</v-list-tile-title>
-    </v-list-tile-content>
-  </v-list-tile>
--->
 </template>
 
 
@@ -25,11 +53,12 @@ import _ from 'lodash'
 
 export default {
   name: 'tree-view-item',
-  props: ['data', 'modifiable', 'key-string', 'current-depth'],
+  props: ['data', 'modifiable', 'key-string', 'current-depth', 'path'],
   data: function () {
     return {
       valueString: this.data && this.data.toString(),
-      error: false
+      error: false,
+      dialogModifyKeyValue: false
     }
   },
   computed: {

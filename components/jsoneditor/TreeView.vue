@@ -1,13 +1,7 @@
 <template>
   <div class="tree-view-wrapper">
-    <tree-view-item class="item-root" :data="parsedData" :max-depth="allOptions.maxDepth" :current-depth="0" :modifiable="allOptions.modifiable" @change-data="onChangeData"></tree-view-item>
+    <tree-view-item class="item-root" :data="parsedData" :max-depth="allOptions.maxDepth" :current-depth="0" path="root/" :modifiable="allOptions.modifiable" @change-data="onChangeData"></tree-view-item>
   </div>
-
-
-<!--  <v-list>
-    <tree-view-item :data="parsedData" :max-depth="allOptions.maxDepth" :current-depth="0" :modifiable="allOptions.modifiable" @change-data="onChangeData"></tree-view-item>
-  </v-list>
--->
 </template>
 
 <script>
