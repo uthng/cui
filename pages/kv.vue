@@ -17,7 +17,7 @@
 <script>
 import TreeView from '~/components/jsoneditor/TreeView.vue'
 import consul from '~/lib/consul/consul'
-import utils from '~/lib/utils/utils'
+import object from '~/lib/utils/object'
 
 export default {
   data: () => {
@@ -29,26 +29,30 @@ export default {
   components: {
     TreeView
   },
-  // computed: {
-  // },
+  computed: {
+    jsonSource () { return this.$store.state.keyPathObject }
+  },
   async asyncData ({store}) {
     let res = await consul.kv.getRecurseKeys('')
     var mapPaths = {}
 
     if (res.keys === undefined) {
-      return { jsonSource: mapPaths }
+      await store.dispatch('updateKeyPathObject', mapPaths)
     }
 
+    // Get value of key to base64 decoding
     for (var i = 0; i < res.keys.length; i++) {
-      /*console.log(res.keys[i].Value)*/
       var value = res.keys[i].Value
       if (value !== undefined && value !== null) {
         value = Base64.decode(value)
       }
-      utils.createMapPaths(mapPaths, '/', res.keys[i].Key, value)
+
+      // Create key path object
+      object.createObjectByPath(mapPaths, '/', res.keys[i].Key, value)
     }
 
-    return { jsonSource: mapPaths }
+    // store keypathobject to store
+    await store.dispatch('updateKeyPathObject', mapPaths)
   }
 
 }

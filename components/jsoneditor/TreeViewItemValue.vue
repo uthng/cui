@@ -29,8 +29,8 @@
                   name="key-value"
                   label="Value"
                   textarea
-                  :value="valueFormed"
                   rows="10"
+                  v-model="keyValue"
                 ></v-text-field>
               </v-flex>
             </v-layout>
@@ -38,7 +38,7 @@
         </v-card-text>
         <v-card-actions>
           <v-btn color="primary" flat @click.stop="dialogModifyKeyValue=false">Close</v-btn>
-          <v-btn color="primary" flat @click.stop="dialogModifyKeyValue=false">Save</v-btn>
+          <v-btn color="primary" flat @click.stop="saveModifiedKeyValue(keyValue)">Save</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -50,6 +50,7 @@
 
 <script>
 import _ from 'lodash'
+import object from '~/lib/utils/object'
 
 export default {
   name: 'tree-view-item',
@@ -58,7 +59,8 @@ export default {
     return {
       valueString: this.data && this.data.toString(),
       error: false,
-      dialogModifyKeyValue: false
+      dialogModifyKeyValue: false,
+      keyValue: this.getValue(this.data)
     }
   },
   computed: {
@@ -129,6 +131,17 @@ export default {
     },
     getClassDepth: function (depth) {
         return 'depth-' + depth
+    },
+
+    saveModifiedKeyValue: function (newValue) {
+      // We must clone here because it will be reference object if
+      // we use var with = simply
+      var curKeyPathObject = _.cloneDeep(this.$store.state.keyPathObject)
+      // Set new value
+      object.createObjectByPath(curKeyPathObject, '/', this.path, newValue)
+      // Update store
+      this.$store.dispatch('updateKeyPathObject', curKeyPathObject)
+      this.dialogModifyKeyValue = false
     }
 
   }

@@ -65,7 +65,7 @@
         }
 
         if (data.isRoot) {
-          return this.path
+          return ''
         }
 
         if (this.isValue(data)) {

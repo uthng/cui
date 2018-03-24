@@ -3,12 +3,14 @@ import consul from '~/lib/consul/consul'
 export const GET_DATACENTERS = 'GET_DATACENTERS'
 export const GET_NODES = 'GET_NODES'
 export const SET_DATACENTER = 'SET_DATACENTER'
+export const UPDATE_KEYPATHOBJECT = 'UPDATE_KEYPATHOBJECT'
 
 export const state = () => ({
   sidebar: false,
   datacenters: [],
   nodes: [],
-  selectedDatacenter: ''
+  selectedDatacenter: '',
+  keyPathObject: {}
 })
 
 export const mutations = {
@@ -26,6 +28,11 @@ export const mutations = {
 
   SET_DATACENTER (state, data) {
     state.selectedDatacenter = data
+  },
+
+  UPDATE_KEYPATHOBJECT (state, data) {
+    state.keyPathObject = data
+    console.log(state.keyPathObject)
   }
 }
 
@@ -46,5 +53,8 @@ export const actions = {
   },
   selectDatacenter ({ commit }, dc) {
     commit(SET_DATACENTER, dc)
+  },
+  updateKeyPathObject ({ commit }, obj) {
+    commit(UPDATE_KEYPATHOBJECT, obj)
   }
 }
