@@ -142,8 +142,15 @@ export default {
       // Update store
       this.$store.dispatch('updateKeyPathObject', curKeyPathObject)
       this.dialogModifyKeyValue = false
+      this.showSuccessModifMsg()
     }
-
+  },
+  notifications: {
+    showSuccessModifMsg: {
+      type: 'success',
+      title: 'Modify Key Value',
+      message: 'The new key\'s value has been saved correctly'
+    }
   }
 }
 </script>
