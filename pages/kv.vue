@@ -4,11 +4,11 @@
       <v-flex xs12>
         <div class="text-xs-right mb-4">
           <v-badge left class="mx-0 px-0">
-            <span slot="badge">{{ nb_modifications }}</span>
+            <span slot="badge">{{ nbModifications }}</span>
             <span class="grey--text text--darken-1">MODIFICATIONS</span>
           </v-badge>
           &nbsp;&nbsp;
-          <v-btn flat disabled class="mx-0 px-0">Apply</v-btn>
+          <v-btn flat :disabled="nbModification > 1" class="mx-0 px-0">Apply</v-btn>
         </div>
       </v-flex>
       <v-flex xs12>
@@ -33,7 +33,8 @@ export default {
     TreeView
   },
   computed: {
-    jsonSource () { return this.$store.state.keyPathObject }
+    jsonSource () { return this.$store.state.keyPathObject },
+    nbModifications () { return this.$store.state.keyPathModifList.length }
   },
   async asyncData ({store}) {
     let res = await consul.kv.getRecurseKeys('')

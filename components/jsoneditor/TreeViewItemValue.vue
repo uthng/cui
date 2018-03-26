@@ -141,6 +141,11 @@ export default {
       object.createObjectByPath(curKeyPathObject, '/', this.path, newValue)
       // Update store
       this.$store.dispatch('updateKeyPathObject', curKeyPathObject)
+
+      var keyPathModifList = _.cloneDeep(this.$store.state.keyPathModifList)
+      keyPathModifList.push({path: this.path, value: newValue, type: 'M'})
+      this.$store.dispatch('updateKeyPathModifList', keyPathModifList)
+
       this.dialogModifyKeyValue = false
       this.showSuccessModifMsg()
     }

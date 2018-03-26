@@ -4,13 +4,15 @@ export const GET_DATACENTERS = 'GET_DATACENTERS'
 export const GET_NODES = 'GET_NODES'
 export const SET_DATACENTER = 'SET_DATACENTER'
 export const UPDATE_KEYPATHOBJECT = 'UPDATE_KEYPATHOBJECT'
+export const UPDATE_KEYPATHMODIFLIST = 'UPDATE_KEYPATHMODIFLIST'
 
 export const state = () => ({
   sidebar: false,
   datacenters: [],
   nodes: [],
   selectedDatacenter: '',
-  keyPathObject: {}
+  keyPathObject: {},
+  keyPathModifList: []
 })
 
 export const mutations = {
@@ -32,8 +34,12 @@ export const mutations = {
 
   UPDATE_KEYPATHOBJECT (state, data) {
     state.keyPathObject = data
-    console.log(state.keyPathObject)
+  },
+
+  UPDATE_KEYPATHMODIFLIST (state, data) {
+    state.keyPathModifList = [ ...data ]
   }
+
 }
 
 export const actions = {
@@ -56,5 +62,9 @@ export const actions = {
   },
   updateKeyPathObject ({ commit }, obj) {
     commit(UPDATE_KEYPATHOBJECT, obj)
+  },
+  updateKeyPathModifList ({ commit }, obj) {
+    commit(UPDATE_KEYPATHMODIFLIST, obj)
   }
+
 }
