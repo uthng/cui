@@ -1,5 +1,5 @@
 <template>
-  <div class="item-key-value">
+  <div class="item-key-value" :class="modifColor">
     <div class="item-key" :class="getClassDepth(currentDepth)">{{keyString}}:</div>
     <input v-if="modifiable" class="item-value" :class="getValueType(data)" v-model="valueString" @keyup.enter="onUpdateData" @blur="onUpdateData">
     <div v-else class="item-value" :class="getValueType(data)">{{ valueFormed }}</div>
@@ -66,6 +66,24 @@ export default {
   computed: {
     valueFormed: function () {
       return this.getValue(this.data)
+    },
+    modifColor: function () {
+      var list = this.$store.state.keyPathModifList
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].path == this.path) {
+          if (list[i].type == "M") {
+            return "amber--text text-accent-4"
+          }
+          else if (list[i].type == "A") {
+            return "light-blue--text text-accent-4"
+          }
+          else if (list[i].type == "R") {
+            return "red--text text-accent-4"
+          }
+        }
+      }
+
+      return ""
     }
   },
   methods: {
@@ -130,9 +148,8 @@ export default {
       return prefix + 'unknown'
     },
     getClassDepth: function (depth) {
-        return 'depth-' + depth
+      return 'depth-' + depth
     },
-
     saveModifiedKeyValue: function (newValue) {
       // We must clone here because it will be reference object if
       // we use var with = simply
