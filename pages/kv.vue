@@ -8,7 +8,7 @@
             <span class="grey--text text--darken-1">MODIFICATIONS</span>
           </v-badge>
           &nbsp;&nbsp;
-          <v-btn flat :disabled="nbModification > 1" class="mx-0 px-0">Apply</v-btn>
+          <v-btn flat :disabled="nbModifications < 1" class="mx-0 px-0">Apply</v-btn>
         </div>
       </v-flex>
       <v-flex xs12>

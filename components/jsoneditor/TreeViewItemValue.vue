@@ -5,8 +5,8 @@
     <div v-else class="item-value" :class="getValueType(data)">{{ valueFormed }}</div>
     <div class="item-icons">
     <v-btn icon small class="ma-0 pa-0" @click.stop="dialogModifyKeyValue = !dialogModifyKeyValue"><v-icon small>create</v-icon></v-btn>
-    <v-btn icon small class="ma-0 pa-0"><v-icon small>add</v-icon></v-btn>
-    <v-btn icon small class="ma-0 pa-0"><v-icon small>delete</v-icon></v-btn>
+    <v-btn icon small disabled class="ma-0 pa-0"><v-icon small>add</v-icon></v-btn>
+    <v-btn icon small class="ma-0 pa-0" @click.stop="dialogDeleteKeyPath = true"><v-icon small>delete</v-icon></v-btn>
     </div>
     <v-dialog v-model="dialogModifyKeyValue" persistent max-width="700px">
       <v-card>
@@ -42,6 +42,20 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog v-model="dialogDeleteKeyPath" persistent max-width="500px">
+      <v-card>
+        <v-card-title>
+          <span class="headline">Delete Key Value</span>
+        </v-card-title>
+        <v-card-text>
+        Are you sure to delete the following key path: <b><span class="red--text text--lighten-2">{{ path }}</span></b> ?
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" flat @click.stop="dialogDeleteKeyPath=false">Close</v-btn>
+          <v-btn color="primary" flat @click.stop="saveDeletedKeyPath()">Delete</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
   </div>
 
@@ -60,6 +74,7 @@ export default {
       valueString: this.data && this.data.toString(),
       error: false,
       dialogModifyKeyValue: false,
+      dialogDeleteKeyPath: false,
       keyValue: this.getValue(this.data)
     }
   },
@@ -69,21 +84,30 @@ export default {
     },
     modifColor: function () {
       var list = this.$store.state.keyPathModifList
+      var color = "";
+
       for (var i = 0; i < list.length; i++) {
-        if (list[i].path == this.path) {
+        // In the case of key parent is deleted
+        // key parent length < key child
+        // all childs will be marked as deleted
+
+        // Loop all elements of list.
+        // If current key contains modified key and modification type is different R
+        // continue. If modification == R, we break out immediately
+        if (this.path.startsWith(list[i].path)) {
           if (list[i].type == "M") {
-            return "amber--text text-accent-4"
+            color = "amber--text text--lighten-3"
           }
           else if (list[i].type == "A") {
-            return "light-blue--text text-accent-4"
+            color = "light-blue--text text--lighten-3"
           }
           else if (list[i].type == "R") {
-            return "red--text text-accent-4"
+            return "red--text text--lighten-2"
           }
         }
       }
 
-      return ""
+      return color;
     }
   },
   methods: {
@@ -165,6 +189,14 @@ export default {
 
       this.dialogModifyKeyValue = false
       this.showSuccessModifMsg()
+    },
+    saveDeletedKeyPath: function () {
+      var keyPathModifList = _.cloneDeep(this.$store.state.keyPathModifList)
+      keyPathModifList.push({path: this.path, value: '',  type: 'R'})
+      this.$store.dispatch('updateKeyPathModifList', keyPathModifList)
+
+      this.dialogDeleteKeyPath = false
+      this.showSuccessDeleteMsg()
     }
   },
   notifications: {
@@ -172,7 +204,13 @@ export default {
       type: 'success',
       title: 'Modify Key Value',
       message: 'The new key\'s value has been saved correctly'
+    },
+    showSuccessDeleteMsg: {
+      type: 'success',
+      title: 'Delete Key Value',
+      message: 'The path has been deleted correctly'
     }
+
   }
 }
 </script>
