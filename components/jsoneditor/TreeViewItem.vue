@@ -7,12 +7,58 @@
         <span class="item-hint" v-show="!isOpen() && data.children.length !== 1"> ({{data.children.length}} {{ isObject(data) ? 'properties' : 'items' }})</span>
         <span class="item-actions">
           <v-btn icon small disabled class="ma-0 pa-0"><v-icon small>create</v-icon></v-btn>
-          <v-btn icon small class="ma-0 pa-0"><v-icon small>add</v-icon></v-btn>
+          <v-btn icon small class="ma-0 pa-0" @click.stop="dialogCreateKeyPath = true"><v-icon small>add</v-icon></v-btn>
           <v-btn icon small class="ma-0 pa-0" @click.stop="dialogDeleteKeyPath = true"><v-icon small>delete</v-icon></v-btn>
         </span>
       </div>
     </div>
     <tree-view-item :key="getKey(child)" :max-depth="maxDepth" :current-depth="currentDepth+1" v-show="isOpen()" v-for="child in data.children" :data="child" :path="getPath(child)" :modifiable="modifiable" @change-data="onChangeData"></tree-view-item>
+
+    <v-dialog v-model="dialogCreateKeyPath" persistent max-width="700px">
+      <v-card>
+        <v-card-title>
+          <span class="headline">Create Key Value</span>
+        </v-card-title>
+        <v-card-text>
+          <v-container fluid class="px-3">
+            <v-layout row wrap>
+              <v-flex xs6>
+                <v-text-field
+                  name="key-parent"
+                  label="Key parent"
+                  :value="path"
+                  disabled
+                ></v-text-field>
+              </v-flex>
+              <v-flex xs6>
+                <v-text-field
+                  name="key-child"
+                  label="Key"
+                  v-model="keyChild"
+                  hint="To create a path without value (folder), end the key with /"
+                  persistent-hint
+                ></v-text-field>
+              </v-flex>
+              <v-flex xs12>
+                <v-text-field
+                  name="key-value"
+                  label="Value"
+                  textarea
+                  rows="10"
+                  v-model="keyValue"
+                  v-if="displayKeyValueField"
+                ></v-text-field>
+              </v-flex>
+            </v-layout>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" flat @click.stop="dialogCreateKeyPath=false">Close</v-btn>
+          <v-btn color="primary" flat @click.stop="saveCreatedKeyPath(keyChild, keyValue)">Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-dialog v-model="dialogDeleteKeyPath" persistent max-width="500px">
       <v-card>
         <v-card-title>
@@ -36,6 +82,7 @@
 <script>
   import _ from 'lodash'
   import TreeViewItemValue from '~/components/jsoneditor/TreeViewItemValue.vue'
+  import object from '~/lib/utils/object'
 
   export default {
     components: {
@@ -46,7 +93,21 @@
     data: function () {
       return {
         open: this.currentDepth < this.maxDepth,
-        dialogDeleteKeyPath: false
+        dialogDeleteKeyPath: false,
+        dialogCreateKeyPath: false,
+        displayKeyValueField: true,
+        keyValue: "",
+        keyChild: ""
+      }
+    },
+    watch: {
+      keyChild: function (oldChild, newChild) {
+        if (this.keyChild[this.keyChild.length - 1] == "/") {
+          this.displayKeyValueField = false
+        }
+        else {
+          this.displayKeyValueField = true
+        }
       }
     },
     computed: {
@@ -61,6 +122,16 @@
             if (list[i].type == "M") {
               color = "amber--text text--lighten-3"
             }
+            else if (list[i].type == "A") {
+              if (list[i].path.length <= this.path.length) {
+                return "light-blue--text text--lighten-3"
+              } else {
+                // Just a parent => just modified
+                color = "amber--text text--lighten-3"
+              }
+
+            }
+
             else if (list[i].type == "R") {
               // Current path is child of removed key => remove
               if (list[i].path.length <= this.path.length) {
@@ -137,17 +208,50 @@
 
         this.dialogDeleteKeyPath = false
         this.showSuccessDeleteMsg()
-        // Force to reload component (computed because we just mark as delete at this moment)
-        // to change colors
+      },
+      saveCreatedKeyPath: function (child, value) {
+        var keyPathModifList = _.cloneDeep(this.$store.state.keyPathModifList)
+        var curKeyPathObject = _.cloneDeep(this.$store.state.keyPathObject)
+        var path = this.path
+
+        if (child[child.length - 1] == "/") {
+          keyPathModifList.push({path: path + child, value: null,  type: 'A'})
+          // Set new value
+          object.createObjectByPath(curKeyPathObject, '/', this.path + child, null)
+        }
+        else {
+          // Split child if it has multiple levels
+          // Loop and add each level to modified path list to handle color
+          var arr = child.split("/")
+          for (var i = 0; i < arr.length; i++) {
+            if (i < arr.length - 1) {
+              path = path + arr[i] + "/"
+              keyPathModifList.push({path: path, value: null,  type: 'A'})
+            }
+            else {
+              path = path + arr[i]
+              keyPathModifList.push({path: path, value: value,  type: 'A'})
+            }
+          }
+          // Set new value
+          object.createObjectByPath(curKeyPathObject, '/', this.path + child, value)
+        }
+
+        this.$store.dispatch('updateKeyPathModifList', keyPathModifList)
+        // Update store
+        this.$store.dispatch('updateKeyPathObject', curKeyPathObject)
+
+        this.dialogCreateKeyPath = false
+        this.showSuccessCreateMsg()
 
       }
 
     },
     notifications: {
-      showSuccessModifMsg: {
+      showSuccessCreateMsg: {
         type: 'success',
-        title: 'Modify Key Value',
-        message: 'The new key\'s value has been saved correctly'
+        title: 'Create Key Value',
+        message: 'The new key has been created correctly'
       },
       showSuccessDeleteMsg: {
         type: 'success',
