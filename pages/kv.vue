@@ -8,7 +8,7 @@
             <span class="grey--text text--darken-1">MODIFICATIONS</span>
           </v-badge>
           &nbsp;&nbsp;
-          <v-btn flat :disabled="nbModifications < 1" class="mx-0 px-0">Apply</v-btn>
+          <v-btn flat :disabled="nbModifications < 1" class="mx-0 px-0" @click="applyModifications()">Apply</v-btn>
         </div>
       </v-flex>
       <v-flex xs12>
@@ -19,6 +19,7 @@
 </template>
 
 <script>
+import _ from 'lodash'
 import TreeView from '~/components/jsoneditor/TreeView.vue'
 import consul from '~/lib/consul/consul'
 import object from '~/lib/utils/object'
@@ -37,26 +38,35 @@ export default {
     nbModifications () { return this.$store.state.keyPathModifList.length }
   },
   async asyncData ({store}) {
-    let res = await consul.kv.getRecurseKeys('')
-    var mapPaths = {}
+  //  let res = await consul.kv.getRecurseKeys('')
+  //  var mapPaths = {}
 
-    if (res.keys === undefined) {
-      await store.dispatch('updateKeyPathObject', mapPaths)
-    }
+  //  if (res.keys === undefined) {
+  //    await store.dispatch('updateKeyPathObject', mapPaths)
+  //  }
 
     // Get value of key to base64 decoding
-    for (var i = 0; i < res.keys.length; i++) {
-      var value = res.keys[i].Value
-      if (value !== undefined && value !== null) {
-        value = Base64.decode(value)
-      }
+  //  for (var i = 0; i < res.keys.length; i++) {
+  //    var value = res.keys[i].Value
+  //    if (value !== undefined && value !== null) {
+  //      value = Base64.decode(value)
+  //    }
 
       // Create key path object
-      object.createObjectByPath(mapPaths, '/', res.keys[i].Key, value)
-    }
+  //    object.createObjectByPath(mapPaths, '/', res.keys[i].Key, value)
+  //  }
 
     // store keypathobject to store
-    await store.dispatch('updateKeyPathObject', mapPaths)
+  //  await store.dispatch('updateKeyPathObject', mapPaths)
+
+    await store.dispatch('getConsulKv', '')
+  },
+  methods: {
+    applyModifications: function () {
+      var list = _.cloneDeep(this.$store.state.keyPathModifList)
+      this.$store.dispatch('updateTxnConsulKv', list)
+
+    }
   }
 
 }
