@@ -1,6 +1,13 @@
 
 module.exports = {
   /*
+  ** Router config
+  */
+  router: {
+    middleware: 'check-acl'
+  },
+
+  /*
   ** Headers of the page
   */
   head: {

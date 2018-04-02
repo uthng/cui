@@ -78,7 +78,7 @@
         items: [
           { icon: 'apps', title: 'Nodes', href: '/' },
           { icon: 'apps', title: 'K/V', href: '/kv' },
-          { icon: 'bubble_chart', title: 'ACL', to: '/acl' }
+          { icon: 'apps', title: 'ACL', href: '/acl' }
         ],
         miniVariant: false,
         right: true,
@@ -88,12 +88,25 @@
     },
     computed: {
       datacenters () { return this.$store.state.datacenters },
-      selectedDatacenter () { return this.$store.state.selectedDatacenter }
+      selectedDatacenter () { return this.$store.state.selectedDatacenter },
+    },
+    mounted: function () {
+      if (this.$store.state.consulAcl == false) {
+        this.showWarnMsg({"type": "warn", "title": "", "message": "ACL support disabled", "opts": {"closeButton": true, "positionClass": "toast-top-full-width", "timeOut": "0", "extendedTimeOut": "0", "preventDuplicates": true}})
+      }
     },
     methods: {
       selectDatacenter: function (dc) {
         this.$store.dispatch('selectDatacenter', dc)
       }
+    },
+    notifications: {
+      showWarnMsg: {
+        type: 'error',
+        title: '',
+        message: ''
+      }
     }
+
   }
 </script>
