@@ -38,12 +38,6 @@
       >
         <v-icon>web</v-icon>
       </v-btn>
-      <v-btn
-        icon
-        @click.stop="fixed = !fixed"
-      >
-        <v-icon>remove</v-icon>
-      </v-btn>
       <v-toolbar-title v-text="title"></v-toolbar-title>
       <v-spacer></v-spacer>
       <v-menu open-on-hover top offset-y>
@@ -54,6 +48,12 @@
           </v-list-tile>
         </v-list>
       </v-menu>
+      <v-btn color="warning" fab small dark @click.stop="dialogLogin=true">
+        <v-icon>account_circle</v-icon>
+      </v-btn>
+      <v-btn color="error" fab small dark>
+        <v-icon>power_settings_new</v-icon>
+      </v-btn>
     </v-toolbar>
     <v-content>
       <v-container>
@@ -65,6 +65,31 @@
             &copy;2018 — <strong>Thanh NGUYEN</strong>
         </v-flex>
     </v-footer>
+    <v-dialog v-model="dialogLogin" persistent max-width="500px">
+      <v-card>
+        <v-card-title>
+          <span class="headline">Login</span>
+        </v-card-title>
+        <v-card-text>
+          <v-container fluid class="px-3">
+            <v-layout row wrap>
+              <v-flex xs12>
+                <v-text-field
+                  name="consul-token"
+                  label="Consul Token:"
+                  v-model="consulToken"
+                ></v-text-field>
+              </v-flex>
+            </v-layout>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" @click.stop="dialogLogin=false">Close</v-btn>
+          <v-btn color="primary" @click.stop="">Login</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </v-app>
 </template>
 
@@ -83,7 +108,8 @@
         miniVariant: false,
         right: true,
         rightDrawer: false,
-        title: 'Consul Web UI'
+        title: 'Consul Web UI',
+        dialogLogin: false
       }
     },
     computed: {

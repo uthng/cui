@@ -37,9 +37,6 @@
 <script>
 import _ from 'lodash'
 import consul from '~/lib/consul/consul'
-import object from '~/lib/utils/object'
-import toastr from 'toastr'// https://github.com/CodeSeven/toastr
-import 'toastr/build/toastr.min.css'
 
 export default {
   data: () => {
