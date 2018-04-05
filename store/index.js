@@ -7,6 +7,7 @@ export const SET_DATACENTER = 'SET_DATACENTER'
 export const UPDATE_CONSULKV = 'UPDATE_CONSULKV'
 // export const GET_CONSULKV = 'GET_CONSULKV'
 export const CHECK_CONSULACL = 'CHECK_CONSULACL'
+export const UPDATE_CONSULACLLIST = 'UPDATE_CONSULACLLIST'
 export const UPDATE_KEYPATHOBJECT = 'UPDATE_KEYPATHOBJECT'
 export const UPDATE_KEYPATHMODIFLIST = 'UPDATE_KEYPATHMODIFLIST'
 
@@ -16,6 +17,7 @@ export const state = () => ({
   nodes: [],
   // consulKeys: {},
   consulAcl: false,
+  consulAclList: {},
   selectedDatacenter: '',
   keyPathObject: {},
   keyPathModifList: []
@@ -44,6 +46,10 @@ export const mutations = {
 
   CHECK_CONSULACL (state, data) {
     state.consulAcl = data
+  },
+
+  UPDATE_CONSULACLLIST (state, data) {
+    state.consulAclList = data
   },
 
   UPDATE_KEYPATHOBJECT (state, data) {
@@ -154,14 +160,23 @@ export const actions = {
     const acl = consul.acl.list()
       .then(res => {
         var enabled = true
+        var result = {}
 
         if (res.error !== undefined && res.error !== null) {
           if (res.error.response.data === 'ACL support disabled') {
             enabled = false
           }
+
+          result.error = res.error.response.data
         }
 
         commit(CHECK_CONSULACL, enabled)
+
+        if (res.acls !== undefined && res.acls !== null) {
+          result.acls = res.acls
+        }
+
+        commit(UPDATE_CONSULACLLIST, result)
       })
 
     return Promise.all([acl])
