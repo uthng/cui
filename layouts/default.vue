@@ -51,9 +51,9 @@
       <v-btn color="warning" fab small dark @click.stop="dialogLogin=true">
         <v-icon>account_circle</v-icon>
       </v-btn>
-      <v-btn color="error" fab small dark>
+      <!--<v-btn color="error" fab small dark>
         <v-icon>power_settings_new</v-icon>
-      </v-btn>
+      </v-btn>-->
     </v-toolbar>
     <v-content>
       <v-container>
@@ -85,7 +85,7 @@
         </v-card-text>
         <v-card-actions>
           <v-btn color="primary" @click.stop="dialogLogin=false">Close</v-btn>
-          <v-btn color="primary" @click.stop="">Login</v-btn>
+          <v-btn color="primary" @click.stop="saveToken()">Save</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -109,7 +109,8 @@
         right: true,
         rightDrawer: false,
         title: 'Consul Web UI',
-        dialogLogin: false
+        dialogLogin: false,
+        consulToken: this.$store.state.ctok
       }
     },
     computed: {
@@ -118,17 +119,23 @@
     },
     mounted: function () {
       if (this.$store.state.consulAcl == false) {
-        this.showWarnMsg({"type": "warn", "title": "", "message": "ACL support disabled", "opts": {"closeButton": true, "positionClass": "toast-top-full-width", "timeOut": "0", "extendedTimeOut": "0", "preventDuplicates": true}})
+        this.showMsg({"type": "warn", "title": "", "message": "ACL support disabled", "opts": {"closeButton": true, "positionClass": "toast-top-full-width", "timeOut": "0", "extendedTimeOut": "0", "preventDuplicates": true}})
       }
     },
     methods: {
       selectDatacenter: function (dc) {
         this.$store.dispatch('selectDatacenter', dc)
+      },
+      saveToken: function () {
+        console.log(this.consulToken)
+        this.$store.dispatch('setConsulToken', this.consulToken)
+        this.dialogLogin = false
+        this.showMsg({"message": "Token has been saved successfully !"})
       }
     },
     notifications: {
-      showWarnMsg: {
-        type: 'error',
+      showMsg: {
+        type: 'success',
         title: '',
         message: ''
       }

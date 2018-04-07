@@ -7,6 +7,7 @@ export const SET_DATACENTER = 'SET_DATACENTER'
 export const UPDATE_CONSULKV = 'UPDATE_CONSULKV'
 // export const GET_CONSULKV = 'GET_CONSULKV'
 export const CHECK_CONSULACL = 'CHECK_CONSULACL'
+export const SET_CONSULTOKEN = 'SET_CONSULTOKEN'
 export const UPDATE_CONSULACLLIST = 'UPDATE_CONSULACLLIST'
 export const UPDATE_KEYPATHOBJECT = 'UPDATE_KEYPATHOBJECT'
 export const UPDATE_KEYPATHMODIFLIST = 'UPDATE_KEYPATHMODIFLIST'
@@ -15,12 +16,12 @@ export const state = () => ({
   sidebar: false,
   datacenters: [],
   nodes: [],
-  // consulKeys: {},
   consulAcl: false,
   consulAclList: {},
   selectedDatacenter: '',
   keyPathObject: {},
-  keyPathModifList: []
+  keyPathModifList: [],
+  ctok: ''
 })
 
 export const mutations = {
@@ -40,9 +41,10 @@ export const mutations = {
     state.selectedDatacenter = data
   },
 
-  // GET_CONSULKV (state, data) {
-  // state.consulKeys = data
-  // }
+  SET_CONSULTOKEN (state, data) {
+    console.log(data)
+    state.ctok = data
+  },
 
   CHECK_CONSULACL (state, data) {
     state.consulAcl = data
@@ -180,6 +182,8 @@ export const actions = {
       })
 
     return Promise.all([acl])
+  },
+  setConsulToken ({ commit }, token) {
+    commit(SET_CONSULTOKEN, token)
   }
-
 }
