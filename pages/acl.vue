@@ -10,12 +10,11 @@
       class="elevation-1"
     >
       <template slot="items" slot-scope="props">
-        <td>{{ props.item.name }}</td>
-        <td class="text-xs-right">{{ props.item.ID }}</td>
-        <td class="text-xs-right">{{ props.item.Name }}</td>
-        <td class="text-xs-right">{{ props.item.Type }}</td>
-        <td class="text-xs-right">{{ props.item.CreateIndex }}</td>
-        <td class="text-xs-right">{{ props.item.ModifyIndex }}</td>
+        <td class="text-xs-left">{{ props.item.ID }}</td>
+        <td class="text-xs-left">{{ props.item.Name }}</td>
+        <td class="text-xs-left">{{ props.item.Type }}</td>
+        <td class="text-xs-left">{{ props.item.CreateIndex }}</td>
+        <td class="text-xs-left">{{ props.item.ModifyIndex }}</td>
         <td class="justify-center layout px-0">
           <v-btn icon class="mx-0" @click="">
             <v-icon color="teal">edit</v-icon>
@@ -42,34 +41,38 @@ export default {
   data: () => {
     return {
       headers: [
-        { text: 'ID', value: 'id' },
-        { text: 'Name', value: 'name' },
-        { text: 'Type', value: 'type' },
-        { text: 'CreateIndex', value: 'createindex', sortable: false },
-        { text: 'ModifyIndex', value: 'modifyindex', sortable: false }
+        { text: 'ID', value: 'id', align: 'left' },
+        { text: 'Name', value: 'name', align: 'left' },
+        { text: 'Type', value: 'type', align: 'left' },
+        { text: 'CreateIndex', value: 'createindex', sortable: false, align: 'left' },
+        { text: 'ModifyIndex', value: 'modifyindex', sortable: false, align: 'left' },
+        { text: 'Actions', value: 'name', sortable: false, align: 'left' }
       ],
-      items: []
     }
   },
   computed: {
     isAclEnabled () { return this.$store.state.consulAcl },
-    items () {
-      var acls = this.$store.state.consulAcl.acls
-      if (_.isUndefined(acls) || _.isNull(acls)) {
-        return []
-      }
+    // items () {
+    //  var acls = this.$store.state.consulAcl.acls
+    //  if (_.isUndefined(acls) || _.isNull(acls)) {
+    //    return []
+    //  }
 
-      return acls
-    }
+    //  return acls
+    // },
+    // ctok () { return this.$store.state.ctok }
+    items () { return this.$store.state.consulAclList }
   },
-  async asyncData ({store}) {
-  },
-  mounted: function () {
-    var err = this.$store.state.consulAclList.error
-    if (!_.isUndefined(err) && !_.isNull(err)) {
-      this.showMsg({type: 'error', message: err})
+  mounted: async function () {
+    let ret = await consul.acl.list(this.$store.state.ctok)
+    let items = []
+    if (!_.isUndefined(ret.error) && !_.isNull(ret.error)) {
+       this.showMsg({type: 'error', message: ret.error})
+    } else {
+      items = ret.acls
     }
 
+    this.$store.dispatch('updateConsulAclList', items)
   },
   methods: {
     test: function () {
