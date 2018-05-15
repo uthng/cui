@@ -53,16 +53,20 @@ export default {
     try {
       this.dlgLoading = true
 
-      let datacenters = this.$consul.coordinate.getDatacenters(
+      let datacenters = await this.$consul.coordinate.getDatacenters(
         this.$store.state.ctok
       )
+
       this.$store.dispatch("selectDatacenter", datacenters[0])
       this.$store.dispatch("updateListDatacenters", datacenters)
 
-      let nodes = this.$consul.coordinate.getNodes(this.$store.state.ctok)
+      let nodes = await this.$consul.coordinate.getNodes(this.$store.state.ctok)
       this.$store.dispatch("updateListNodes", nodes)
 
-      this.nodes = this.$consul.health.getAllNodeHealths(this.$store.state.ctok)
+      this.nodes = await this.$consul.health.getAllNodeHealths(
+        nodes,
+        this.$store.state.ctok
+      )
 
       this.dlgLoading = false
     } catch (error) {
