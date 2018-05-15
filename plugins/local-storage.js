@@ -1,10 +1,10 @@
-import createPersistedState from 'vuex-persistedstate'
-import * as Cookies from 'js-cookie'
+import createPersistedState from "vuex-persistedstate"
+import * as Cookies from "js-cookie"
 
-export default ({store}) => {
+export default ({ store }) => {
   createPersistedState({
-    key: 'cui',
-    paths: ['ctok'],
+    key: "cui",
+    paths: ["ctok"],
     storage: {
       getItem: key => Cookies.get(key),
       // Please see https://github.com/js-cookie/js-cookie#json, on how to handle JSON.

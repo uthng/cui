@@ -14,36 +14,36 @@
             <v-layout row wrap>
               <v-flex xs12>
                 <v-text-field
+                  v-if="formFieldEnabled"
+                  v-model="editedItem.ID"
+                  :disabled="formFieldEnabled"
                   name="acl-token"
                   label="Token:"
-                  v-model="editedItem.ID"
-                  v-if="formFieldEnabled"
-                  :disabled="formFieldEnabled"
-                ></v-text-field>
+                />
               </v-flex>
               <v-flex xs12>
                 <v-text-field
+                  v-model="editedItem.Name"
                   name="aclName"
                   label="Name:"
-                  v-model="editedItem.Name"
-                ></v-text-field>
+                />
               </v-flex>
-              <v-flex xs12
+              <v-flex xs12>
                 <v-select
-                  name="aclType"
                   :items="aclTypes"
-                  label="Type:"
                   v-model="editedItem.Type"
-                ></v-select>
+                  name="aclType"
+                  label="Type:"
+                />
               </v-flex>
               <v-flex xs12>
                 <v-text-field
+                  v-model="editedItem.Rules"
                   name="aclRule"
                   label="Rules:"
                   multi-line
                   row="10"
-                  v-model="editedItem.Rules"
-                ></v-text-field>
+                />
               </v-flex>
             </v-layout>
           </v-container>
@@ -109,9 +109,9 @@
 </template>
 
 <script>
-import _ from 'lodash'
-import Loader from '~/components/loader/loader.vue'
-import consul from '~/lib/consul/consul'
+import _ from "lodash"
+import Loader from "~/components/loader/loader.vue"
+import consul from "~/lib/consul/consul"
 
 export default {
   components: {
@@ -120,25 +120,53 @@ export default {
   data: () => {
     return {
       headers: [
-        { text: 'Token', value: 'token', align: 'left' },
-        { text: 'Name', value: 'name', align: 'left' },
-        { text: 'Type', value: 'type', align: 'left' },
-        { text: 'CreateIndex', value: 'createindex', sortable: false, align: 'left' },
-        { text: 'ModifyIndex', value: 'modifyindex', sortable: false, align: 'left' },
-        { text: 'Actions', value: 'name', sortable: false, align: 'left' }
+        { text: "Token", value: "token", align: "left" },
+        { text: "Name", value: "name", align: "left" },
+        { text: "Type", value: "type", align: "left" },
+        {
+          text: "CreateIndex",
+          value: "createindex",
+          sortable: false,
+          align: "left"
+        },
+        {
+          text: "ModifyIndex",
+          value: "modifyindex",
+          sortable: false,
+          align: "left"
+        },
+        { text: "Actions", value: "name", sortable: false, align: "left" }
       ],
-      aclTypes: ['client', 'management'],
+      aclTypes: ["client", "management"],
       dlgEditItem: false,
       dlgDeleteItem: false,
       editedIndex: -1,
-      editedItem: { ID: '', Name: '', Type: '', CreateIndex: -1, ModifyIndex: -1, Rules: '' },
-      defaultItem: { ID: '', Name: '', Type: '', CreateIndex: -1, ModifyIndex: -1, Rules: '' },
+      editedItem: {
+        ID: "",
+        Name: "",
+        Type: "",
+        CreateIndex: -1,
+        ModifyIndex: -1,
+        Rules: ""
+      },
+      defaultItem: {
+        ID: "",
+        Name: "",
+        Type: "",
+        CreateIndex: -1,
+        ModifyIndex: -1,
+        Rules: ""
+      },
       dlgLoading: false
     }
   },
   computed: {
-    isAclEnabled () { return this.$store.state.consulAcl },
-    acls () { return this.$store.state.consulAclList },
+    isAclEnabled() {
+      return this.$store.state.consulAcl
+    },
+    acls() {
+      return this.$store.state.consulAclList
+    },
     formTitle: function() {
       return this.editedIndex === -1 ? "New ACL" : "Edit ACL"
     },
@@ -146,89 +174,72 @@ export default {
       return this.editedIndex === -1 ? false : true
     }
   },
-  mounted: async function () {
+  mounted: async function() {
     this.loadData()
   },
   methods: {
-    loadData: async function () {
+    loadData: async function() {
       let ret = await consul.acl.list(this.$store.state.ctok)
       let items = []
       if (!_.isUndefined(ret.error) && !_.isNull(ret.error)) {
-        this.showMsg({type: 'error', message: ret.error})
+        this.showMsg({ type: "error", message: ret.error })
       } else {
         items = ret.acls
       }
 
-      this.$store.dispatch('updateConsulAclList', items)
+      this.$store.dispatch("updateConsulAclList", items)
     },
-    deleteItem: async function () {
+    deleteItem: async function() {
       try {
-        let acls = _.cloneDeep(this.acls)
-
         this.dlgLoading = true
-        await consul.acl.delete(
-          this.editedItem.ID,
-          this.$store.state.ctok
-        )
+        await consul.acl.delete(this.editedItem.ID, this.$store.state.ctok)
 
         this.loadData()
 
         this.showMsg({
           message:
-            'The acl ' +
-            this.editedItem.ID +
-            ' has been deleted correctly !'
+            "The acl " + this.editedItem.ID + " has been deleted correctly !"
         })
 
         this.closeDlgItem()
       } catch (error) {
         this.closeDlgItem()
-        this.showMsg({ type: 'error', message: error })
+        this.showMsg({ type: "error", message: error })
       }
     },
-    saveItem: async function () {
+    saveItem: async function() {
       try {
-        let acls = _.cloneDeep(this.acls)
-
         this.dlgLoading = true
 
         if (this.editedIndex > -1) {
-          await consul.acl.update(
-            this.editedItem,
-            this.$store.state.ctok
-          )
+          await consul.acl.update(this.editedItem, this.$store.state.ctok)
         } else {
-          await consul.acl.create(
-            this.editedItem,
-            this.$store.state.ctok
-          )
+          await consul.acl.create(this.editedItem, this.$store.state.ctok)
         }
 
         this.loadData()
 
         this.showMsg({
           message:
-            'The acl ' +
-            this.editedItem.Name +
-            ' has been saved correctly !'
+            "The acl " + this.editedItem.Name + " has been saved correctly !"
         })
 
         this.closeDlgItem()
       } catch (error) {
         this.closeDlgItem()
-        this.showMsg({ type: 'error', message: error })
+        this.showMsg({ type: "error", message: error })
       }
     },
-    openDlgItem: function (item, op) {
+    openDlgItem: function(item, op) {
       this.editedIndex = this.acls.indexOf(item)
       this.editedItem = _.cloneDeep(item)
-      if (op === 'edit') {
+      if (op === "edit") {
         this.dlgEditItem = true
       } else {
         this.dlgDeleteItem = true
       }
     },
-    closeDlgItem: function () {
+    closeDlgItem: function() {
       this.dlgLoading = false
       this.dlgEditItem = false
       this.dlgDeleteItem = false
@@ -236,13 +247,12 @@ export default {
       this.editedIndex = -1
       this.editedItem = Object.assign({}, this.defaultItem)
     }
-
   },
   notifications: {
     showMsg: {
-      type: 'success',
-      title: '',
-      message: ''
+      type: "success",
+      title: "",
+      message: ""
     }
   }
 }

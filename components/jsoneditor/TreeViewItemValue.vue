@@ -1,12 +1,12 @@
 <template>
-  <div class="item-key-value" :class="modifColor">
-    <div class="item-key" :class="getClassDepth(currentDepth)">{{keyString}}:</div>
-    <input v-if="modifiable" class="item-value" :class="getValueType(data)" v-model="valueString" @keyup.enter="onUpdateData" @blur="onUpdateData">
-    <div v-else class="item-value" :class="getValueType(data)">{{ valueFormed }}</div>
+  <div :class="modifColor" class="item-key-value">
+    <div :class="getClassDepth(currentDepth)" class="item-key">{{ keyString }}:</div>
+    <input v-if="modifiable" :class="getValueType(data)" v-model="valueString" class="item-value" @keyup.enter="onUpdateData" @blur="onUpdateData">
+    <div v-else :class="getValueType(data)" class="item-value">{{ valueFormed }}</div>
     <div class="item-icons">
-    <v-btn icon small class="ma-0 pa-0" @click.stop="dialogModifyKeyValue = !dialogModifyKeyValue"><v-icon small>create</v-icon></v-btn>
-    <v-btn icon small disabled class="ma-0 pa-0"><v-icon small>add</v-icon></v-btn>
-    <v-btn icon small class="ma-0 pa-0" @click.stop="dialogDeleteKeyPath = true"><v-icon small>delete</v-icon></v-btn>
+      <v-btn icon small class="ma-0 pa-0" @click.stop="dialogModifyKeyValue = !dialogModifyKeyValue"><v-icon small>create</v-icon></v-btn>
+      <v-btn icon small disabled class="ma-0 pa-0"><v-icon small>add</v-icon></v-btn>
+      <v-btn icon small class="ma-0 pa-0" @click.stop="dialogDeleteKeyPath = true"><v-icon small>delete</v-icon></v-btn>
     </div>
     <v-dialog v-model="dialogModifyKeyValue" persistent max-width="700px">
       <v-card>
@@ -18,20 +18,20 @@
             <v-layout row wrap>
               <v-flex xs12>
                 <v-text-field
+                  :value="path"
                   name="key-path"
                   label="Key"
-                  :value="path"
                   disabled
-                ></v-text-field>
+                />
               </v-flex>
               <v-flex xs12>
                 <v-text-field
+                  v-model="keyValue"
                   name="key-value"
                   label="Value"
                   textarea
                   rows="10"
-                  v-model="keyValue"
-                ></v-text-field>
+                />
               </v-flex>
             </v-layout>
           </v-container>
@@ -48,7 +48,7 @@
           <span class="headline">Delete Key Value</span>
         </v-card-title>
         <v-card-text>
-        Are you sure to delete the following key path: <b><span class="red--text text--lighten-2">{{ path }}</span></b> ?
+          Are you sure to delete the following key path: <b><span class="red--text text--lighten-2">{{ path }}</span></b> ?
         </v-card-text>
         <v-card-actions>
           <v-btn color="primary" flat @click.stop="dialogDeleteKeyPath=false">Close</v-btn>
@@ -63,13 +63,34 @@
 
 
 <script>
-import _ from 'lodash'
-import object from '~/lib/utils/object'
+import _ from "lodash"
+import object from "~/lib/utils/object"
 
 export default {
-  name: 'tree-view-item',
-  props: ['data', 'modifiable', 'key-string', 'current-depth', 'path'],
-  data: function () {
+  name: "TreeViewItem",
+  props: {
+    data: {
+      type: String,
+      required: true
+    },
+    currentDepth: {
+      type: Number,
+      required: true
+    },
+    modifiable: {
+      type: Boolean,
+      default: false
+    },
+    path: {
+      type: String,
+      required: true
+    },
+    keyString: {
+      type: String,
+      required: true
+    }
+  },
+  data: function() {
     return {
       valueString: this.data && this.data.toString(),
       error: false,
@@ -79,12 +100,12 @@ export default {
     }
   },
   computed: {
-    valueFormed: function () {
+    valueFormed: function() {
       return this.getValue(this.data)
     },
-    modifColor: function () {
+    modifColor: function() {
       var list = this.$store.state.keyPathModifList
-      var color = "";
+      var color = ""
 
       for (var i = 0; i < list.length; i++) {
         // In the case of key parent is deleted
@@ -97,50 +118,54 @@ export default {
         if (this.path.startsWith(list[i].path)) {
           if (list[i].type == "M") {
             color = "amber--text text--lighten-3"
-          }
-          else if (list[i].type == "A") {
+          } else if (list[i].type == "A") {
             color = "light-blue--text text--lighten-3"
-          }
-          else if (list[i].type == "R") {
+          } else if (list[i].type == "R") {
             return "red--text text--lighten-2"
           }
         }
       }
 
-      return color;
+      return color
     }
   },
   methods: {
-    onUpdateData: function () {
+    onUpdateData: function() {
       try {
         let v = this.typedValue(this.valueString)
         this.error = false
-        this.$emit('change-data', [], v)
+        this.$emit("change-data", [], v)
       } catch (err) {
         this.error = err
       }
     },
-    typedValue: function (v) {
-      if (v === '') { throw new Error('empty') }
+    typedValue: function(v) {
+      if (v === "") {
+        throw new Error("empty")
+      }
 
-      let dataType = this.getValueType(this.data, '')
+      let dataType = this.getValueType(this.data, "")
 
       switch (dataType) {
-        case 'number':
+        case "number":
           if (_.isNaN(_.toNumber(v))) {
-            throw new Error('only number')
+            throw new Error("only number")
           }
           return _.toNumber(v)
-        case 'boolean':
-          if (v.toLowerCase() === 'true') { return true }
-          if (v.toLowerCase() === 'false') { return false }
-          throw new Error('true or false')
-        case 'string':
+        case "boolean":
+          if (v.toLowerCase() === "true") {
+            return true
+          }
+          if (v.toLowerCase() === "false") {
+            return false
+          }
+          throw new Error("true or false")
+        case "string":
         default:
           return v
       }
     },
-    getValue: function (value) {
+    getValue: function(value) {
       if (_.isNumber(value)) {
         return value
       }
@@ -153,47 +178,47 @@ export default {
       }
       return value
     },
-    getValueType: function (value, prefix = 'item-value-') {
+    getValueType: function(value, prefix = "item-value-") {
       if (_.isNumber(value)) {
-        return prefix + 'number'
+        return prefix + "number"
       }
       if (_.isFunction(value)) {
-        return prefix + 'function'
+        return prefix + "function"
       }
       if (_.isBoolean(value)) {
-        return prefix + 'boolean'
+        return prefix + "boolean"
       }
       if (_.isNull(value)) {
-        return prefix + 'null'
+        return prefix + "null"
       }
       if (_.isString(value)) {
-        return prefix + 'string'
+        return prefix + "string"
       }
-      return prefix + 'unknown'
+      return prefix + "unknown"
     },
-    getClassDepth: function (depth) {
-      return 'depth-' + depth
+    getClassDepth: function(depth) {
+      return "depth-" + depth
     },
-    saveModifiedKeyValue: function (newValue) {
+    saveModifiedKeyValue: function(newValue) {
       // We must clone here because it will be reference object if
       // we use var with = simply
       var curKeyPathObject = _.cloneDeep(this.$store.state.keyPathObject)
       // Set new value
-      object.createObjectByPath(curKeyPathObject, '/', this.path, newValue)
+      object.createObjectByPath(curKeyPathObject, "/", this.path, newValue)
       // Update store
-      this.$store.dispatch('updateKeyPathObject', curKeyPathObject)
+      this.$store.dispatch("updateKeyPathObject", curKeyPathObject)
 
       var keyPathModifList = _.cloneDeep(this.$store.state.keyPathModifList)
-      keyPathModifList.push({path: this.path, value: newValue, type: 'M'})
-      this.$store.dispatch('updateKeyPathModifList', keyPathModifList)
+      keyPathModifList.push({ path: this.path, value: newValue, type: "M" })
+      this.$store.dispatch("updateKeyPathModifList", keyPathModifList)
 
       this.dialogModifyKeyValue = false
       this.showSuccessModifMsg()
     },
-    saveDeletedKeyPath: function () {
+    saveDeletedKeyPath: function() {
       var keyPathModifList = _.cloneDeep(this.$store.state.keyPathModifList)
-      keyPathModifList.push({path: this.path, value: '',  type: 'R'})
-      this.$store.dispatch('updateKeyPathModifList', keyPathModifList)
+      keyPathModifList.push({ path: this.path, value: "", type: "R" })
+      this.$store.dispatch("updateKeyPathModifList", keyPathModifList)
 
       this.dialogDeleteKeyPath = false
       this.showSuccessDeleteMsg()
@@ -201,22 +226,20 @@ export default {
   },
   notifications: {
     showSuccessModifMsg: {
-      type: 'success',
-      title: 'Modify Key Value',
-      message: 'The new key\'s value has been saved correctly'
+      type: "success",
+      title: "Modify Key Value",
+      message: "The new key's value has been saved correctly"
     },
     showSuccessDeleteMsg: {
-      type: 'success',
-      title: 'Delete Key Value',
-      message: 'The path has been deleted correctly'
+      type: "success",
+      title: "Delete Key Value",
+      message: "The path has been deleted correctly"
     }
-
   }
 }
 </script>
 
 <style>
-
 /* div horizontally: */
 /* parent overflow: hidden, child: float left */
 /* or usung flex */
@@ -229,7 +252,7 @@ export default {
 .item-key {
   /*float: left;*/
   flex: 1;
-  justify-content: flex-start
+  justify-content: flex-start;
 }
 
 .item-value {
@@ -249,5 +272,4 @@ export default {
   margin-right: 10px;
   margin-top: -5px;
 }
-
 </style>

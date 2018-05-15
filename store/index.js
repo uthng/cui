@@ -1,16 +1,16 @@
-import consul from '~/lib/consul/consul'
-import object from '~/lib/utils/object'
+import consul from "~/lib/consul/consul"
+import object from "~/lib/utils/object"
 
-export const GET_DATACENTERS = 'GET_DATACENTERS'
-export const GET_NODES = 'GET_NODES'
-export const SET_DATACENTER = 'SET_DATACENTER'
-export const UPDATE_CONSULKV = 'UPDATE_CONSULKV'
+export const GET_DATACENTERS = "GET_DATACENTERS"
+export const GET_NODES = "GET_NODES"
+export const SET_DATACENTER = "SET_DATACENTER"
+export const UPDATE_CONSULKV = "UPDATE_CONSULKV"
 // export const GET_CONSULKV = 'GET_CONSULKV'
-export const CHECK_CONSULACL = 'CHECK_CONSULACL'
-export const SET_CONSULTOKEN = 'SET_CONSULTOKEN'
-export const UPDATE_CONSULACLLIST = 'UPDATE_CONSULACLLIST'
-export const UPDATE_KEYPATHOBJECT = 'UPDATE_KEYPATHOBJECT'
-export const UPDATE_KEYPATHMODIFLIST = 'UPDATE_KEYPATHMODIFLIST'
+export const CHECK_CONSULACL = "CHECK_CONSULACL"
+export const SET_CONSULTOKEN = "SET_CONSULTOKEN"
+export const UPDATE_CONSULACLLIST = "UPDATE_CONSULACLLIST"
+export const UPDATE_KEYPATHOBJECT = "UPDATE_KEYPATHOBJECT"
+export const UPDATE_KEYPATHMODIFLIST = "UPDATE_KEYPATHMODIFLIST"
 
 export const state = () => ({
   sidebar: false,
@@ -18,105 +18,101 @@ export const state = () => ({
   nodes: [],
   consulAcl: false,
   consulAclList: [],
-  selectedDatacenter: '',
+  selectedDatacenter: "",
   keyPathObject: {},
   keyPathModifList: [],
-  ctok: ''
+  ctok: ""
 })
 
 export const mutations = {
-  toggleSidebar (state) {
+  toggleSidebar(state) {
     state.sidebar = !state.sidebar
   },
 
-  GET_DATACENTERS (state, data) {
-    state.datacenters = [ ...data ]
+  GET_DATACENTERS(state, data) {
+    state.datacenters = [...data]
   },
 
-  GET_NODES (state, data) {
-    state.nodes = [ ...data ]
+  GET_NODES(state, data) {
+    state.nodes = [...data]
   },
 
-  SET_DATACENTER (state, data) {
+  SET_DATACENTER(state, data) {
     state.selectedDatacenter = data
   },
 
-  SET_CONSULTOKEN (state, data) {
+  SET_CONSULTOKEN(state, data) {
     console.log(data)
     state.ctok = data
   },
 
-  CHECK_CONSULACL (state, data) {
+  CHECK_CONSULACL(state, data) {
     state.consulAcl = data
   },
 
-  UPDATE_CONSULACLLIST (state, data) {
-    state.consulAclList = [ ...data ]
+  UPDATE_CONSULACLLIST(state, data) {
+    state.consulAclList = [...data]
   },
 
-  UPDATE_KEYPATHOBJECT (state, data) {
+  UPDATE_KEYPATHOBJECT(state, data) {
     state.keyPathObject = data
   },
 
-  UPDATE_KEYPATHMODIFLIST (state, data) {
-    state.keyPathModifList = [ ...data ]
+  UPDATE_KEYPATHMODIFLIST(state, data) {
+    state.keyPathModifList = [...data]
   }
-
 }
 
 export const actions = {
-  nuxtServerInit ({ commit }) {
-    const datacenters = consul.coordinate.getDatacenters()
-      .then(res => {
-        commit(GET_DATACENTERS, res.datacenters)
-        commit(SET_DATACENTER, res.datacenters[0])
-      })
+  nuxtServerInit({ commit }) {
+    const datacenters = consul.coordinate.getDatacenters().then(res => {
+      commit(GET_DATACENTERS, res.datacenters)
+      commit(SET_DATACENTER, res.datacenters[0])
+    })
 
-    const nodes = consul.coordinate.getNodes()
-      .then(res => {
-        commit(GET_NODES, res.nodes)
-      })
+    const nodes = consul.coordinate.getNodes().then(res => {
+      commit(GET_NODES, res.nodes)
+    })
 
     return Promise.all([datacenters, nodes])
   },
-  selectDatacenter ({ commit }, dc) {
+  selectDatacenter({ commit }, dc) {
     commit(SET_DATACENTER, dc)
   },
-  updateKeyPathObject ({ commit }, obj) {
+  updateKeyPathObject({ commit }, obj) {
     commit(UPDATE_KEYPATHOBJECT, obj)
   },
-  updateKeyPathModifList ({ commit }, obj) {
+  updateKeyPathModifList({ commit }, obj) {
     commit(UPDATE_KEYPATHMODIFLIST, obj)
   },
-  getConsulKv ({ commit }, path) {
-    const kv = consul.kv.getRecurseKeys(path)
-      .then(res => {
-        // commit(GET_CONSULKV, res.keys)
-        var mapPaths = {}
+  getConsulKv({ commit }, path) {
+    const kv = consul.kv.getRecurseKeys(path).then(res => {
+      // commit(GET_CONSULKV, res.keys)
+      var mapPaths = {}
 
-        if (res.keys !== undefined && res.keys !== null) {
-          var keys = res.keys
+      if (res.keys !== undefined && res.keys !== null) {
+        var keys = res.keys
 
-          // Get value of key to base64 decoding
-          for (var i = 0; i < keys.length; i++) {
-            var value = keys[i].Value
-            if (value !== undefined && value !== null) {
-              let buff = Buffer.from(value, 'base64')
-              value = buff.toString('ascii')
-            }
-            // Create key path object
-            object.createObjectByPath(mapPaths, '/', keys[i].Key, value)
+        // Get value of key to base64 decoding
+        for (var i = 0; i < keys.length; i++) {
+          var value = keys[i].Value
+          if (value !== undefined && value !== null) {
+            let buff = Buffer.from(value, "base64")
+            value = buff.toString("ascii")
           }
+          // Create key path object
+          object.createObjectByPath(mapPaths, "/", keys[i].Key, value)
         }
-        commit(UPDATE_KEYPATHOBJECT, mapPaths)
-      })
+      }
+      commit(UPDATE_KEYPATHOBJECT, mapPaths)
+    })
 
     return Promise.all([kv])
   },
-  updateTxnConsulKv ({ commit, dispatch }, list) {
+  updateTxnConsulKv({ commit, dispatch }, list) {
     var transactions = []
 
-    list.sort(function (a, b) {
+    list.sort(function(a, b) {
       // Use toUpperCase() to ignore character casing
       const pathA = a.path.toUpperCase()
       const pathB = b.path.toUpperCase()
@@ -134,47 +130,46 @@ export const actions = {
       var txn = {}
       txn.KV = {}
 
-      if (list[i].type === 'A' || list[i].type === 'M') {
-        txn.KV.Verb = 'set'
-        txn.KV.Value = ''
+      if (list[i].type === "A" || list[i].type === "M") {
+        txn.KV.Verb = "set"
+        txn.KV.Value = ""
         if (list[i].value != null) {
-          let buff = Buffer.from(list[i].value, 'ascii')
-          txn.KV.Value = buff.toString('base64')
+          let buff = Buffer.from(list[i].value, "ascii")
+          txn.KV.Value = buff.toString("base64")
         }
-      } else if (list[i].type === 'R') {
-        txn.KV.Verb = 'delete'
+      } else if (list[i].type === "R") {
+        txn.KV.Verb = "delete"
       }
 
       txn.KV.Key = list[i].path
       transactions.push(txn)
     }
 
-    const txns = consul.transactions.applyMultiKeys(transactions)
-      .then(res => {
-        dispatch('getConsulKv', '')
-        // reset modification list
-        commit(UPDATE_KEYPATHMODIFLIST, [])
-      })
+    const txns = consul.transactions.applyMultiKeys(transactions).then(res => {
+      dispatch("getConsulKv", "")
+      // reset modification list
+      commit(UPDATE_KEYPATHMODIFLIST, [])
+      return res
+    })
 
     return Promise.all([txns])
   },
-  checkConsulAcl ({ commit }) {
-    const acl = consul.acl.list()
-      .then(res => {
-        var enabled = true
+  checkConsulAcl({ commit }) {
+    const acl = consul.acl.list().then(res => {
+      var enabled = true
 
-        if (res.error !== undefined && res.error !== null) {
-          if (res.error.response.data === 'ACL support disabled') {
-            enabled = false
-          }
+      if (res.error !== undefined && res.error !== null) {
+        if (res.error.response.data === "ACL support disabled") {
+          enabled = false
         }
+      }
 
-        commit(CHECK_CONSULACL, enabled)
-      })
+      commit(CHECK_CONSULACL, enabled)
+    })
 
     return Promise.all([acl])
   },
-  setConsulToken ({ commit }, token) {
+  setConsulToken({ commit }, token) {
     commit(SET_CONSULTOKEN, token)
   },
   updateConsulAclList({ commit }, list) {
