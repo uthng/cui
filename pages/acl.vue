@@ -111,7 +111,6 @@
 <script>
 import _ from "lodash"
 import Loader from "~/components/loader/loader.vue"
-import consul from "~/lib/consul/consul"
 
 export default {
   components: {
@@ -162,7 +161,7 @@ export default {
   },
   computed: {
     isAclEnabled() {
-      return this.$store.state.consulAcl
+      return this.$store.state.aclStatus
     },
     acls() {
       return this.$store.state.consulAclList
@@ -175,24 +174,29 @@ export default {
     }
   },
   mounted: async function() {
-    this.loadData()
+    try {
+      this.dlgLoading = true
+      this.loadData()
+
+      this.dlgLoading = false
+    } catch (error) {
+      this.dlgLoading = false
+      this.showMsg({ type: "error", message: error })
+    }
   },
   methods: {
     loadData: async function() {
-      let ret = await consul.acl.list(this.$store.state.ctok)
-      let items = []
-      if (!_.isUndefined(ret.error) && !_.isNull(ret.error)) {
-        this.showMsg({ type: "error", message: ret.error })
-      } else {
-        items = ret.acls
-      }
+      let items = await this.$consul.acl.list(this.$store.state.ctok)
 
       this.$store.dispatch("updateConsulAclList", items)
     },
     deleteItem: async function() {
       try {
         this.dlgLoading = true
-        await consul.acl.delete(this.editedItem.ID, this.$store.state.ctok)
+        await this.$consul.acl.delete(
+          this.editedItem.ID,
+          this.$store.state.ctok
+        )
 
         this.loadData()
 
@@ -212,9 +216,9 @@ export default {
         this.dlgLoading = true
 
         if (this.editedIndex > -1) {
-          await consul.acl.update(this.editedItem, this.$store.state.ctok)
+          await this.$consul.acl.update(this.editedItem, this.$store.state.ctok)
         } else {
-          await consul.acl.create(this.editedItem, this.$store.state.ctok)
+          await this.$consul.acl.create(this.editedItem, this.$store.state.ctok)
         }
 
         this.loadData()

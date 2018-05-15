@@ -18,7 +18,7 @@
             <v-layout row wrap>
               <v-flex xs12>
                 <v-text-field
-                  :value="path"
+                  :value="editedKey.key"
                   name="key-path"
                   label="Key"
                   disabled
@@ -26,7 +26,7 @@
               </v-flex>
               <v-flex xs12>
                 <v-text-field
-                  v-model="keyValue"
+                  v-model="editedKey.value"
                   name="key-value"
                   label="Value"
                   textarea
@@ -38,7 +38,7 @@
         </v-card-text>
         <v-card-actions>
           <v-btn color="primary" flat @click.stop="dialogModifyKeyValue=false">Close</v-btn>
-          <v-btn color="primary" flat @click.stop="saveModifiedKeyValue(keyValue)">Save</v-btn>
+          <v-btn color="primary" flat @click.stop="saveModifiedKeyValue()">Save</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -64,10 +64,9 @@
 
 <script>
 import _ from "lodash"
-import object from "~/lib/utils/object"
 
 export default {
-  name: "TreeViewItem",
+  name: "ConsulViewItemValue",
   props: {
     data: {
       type: String,
@@ -96,7 +95,7 @@ export default {
       error: false,
       dialogModifyKeyValue: false,
       dialogDeleteKeyPath: false,
-      keyValue: this.getValue(this.data)
+      editedKey: { key: this.path, value: this.getValue(this.data) }
     }
   },
   computed: {
@@ -199,29 +198,13 @@ export default {
     getClassDepth: function(depth) {
       return "depth-" + depth
     },
-    saveModifiedKeyValue: function(newValue) {
-      // We must clone here because it will be reference object if
-      // we use var with = simply
-      var curKeyPathObject = _.cloneDeep(this.$store.state.keyPathObject)
-      // Set new value
-      object.createObjectByPath(curKeyPathObject, "/", this.path, newValue)
-      // Update store
-      this.$store.dispatch("updateKeyPathObject", curKeyPathObject)
-
-      var keyPathModifList = _.cloneDeep(this.$store.state.keyPathModifList)
-      keyPathModifList.push({ path: this.path, value: newValue, type: "M" })
-      this.$store.dispatch("updateKeyPathModifList", keyPathModifList)
-
+    saveModifiedKeyValue: function() {
+      this.$root.$emit("modify-key-value", this.editedKey)
       this.dialogModifyKeyValue = false
-      this.showSuccessModifMsg()
     },
     saveDeletedKeyPath: function() {
-      var keyPathModifList = _.cloneDeep(this.$store.state.keyPathModifList)
-      keyPathModifList.push({ path: this.path, value: "", type: "R" })
-      this.$store.dispatch("updateKeyPathModifList", keyPathModifList)
-
+      this.$root.$emit("delete-key-value", this.path)
       this.dialogDeleteKeyPath = false
-      this.showSuccessDeleteMsg()
     }
   },
   notifications: {

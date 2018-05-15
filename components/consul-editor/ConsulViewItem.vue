@@ -12,7 +12,7 @@
         </span>
       </div>
     </div>
-    <tree-view-item v-for="child in data.children" v-show="isOpen()" :key="getKey(child)" :max-depth="maxDepth" :current-depth="currentDepth+1" :data="child" :path="getPath(child)" :modifiable="modifiable" @change-data="onChangeData"/>
+    <consul-view-item v-for="child in data.children" v-show="isOpen()" :key="getKey(child)" :max-depth="maxDepth" :current-depth="currentDepth+1" :data="child" :path="getPath(child)" :modifiable="modifiable" @change-data="onChangeData"/>
 
     <v-dialog v-model="dialogCreateKeyPath" persistent max-width="700px">
       <v-card>
@@ -24,7 +24,7 @@
             <v-layout row wrap>
               <v-flex xs6>
                 <v-text-field
-                  :value="path"
+                  :value="newKeyValue.path"
                   name="key-parent"
                   label="Key parent"
                   disabled
@@ -32,7 +32,7 @@
               </v-flex>
               <v-flex xs6>
                 <v-text-field
-                  v-model="keyChild"
+                  v-model="newKeyValue.key"
                   name="key-child"
                   label="Key"
                   hint="To create a path without value (folder), end the key with /"
@@ -42,7 +42,7 @@
               <v-flex xs12>
                 <v-text-field
                   v-if="displayKeyValueField"
-                  v-model="keyValue"
+                  v-model="newKeyValue.value"
                   name="key-value"
                   label="Value"
                   textarea
@@ -54,7 +54,7 @@
         </v-card-text>
         <v-card-actions>
           <v-btn color="primary" flat @click.stop="dialogCreateKeyPath=false">Close</v-btn>
-          <v-btn color="primary" flat @click.stop="saveCreatedKeyPath(keyChild, keyValue)">Save</v-btn>
+          <v-btn color="primary" flat @click.stop="saveCreatedKeyPath()">Save</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -75,19 +75,18 @@
     </v-dialog>
 
   </div>
-  <tree-view-item-value v-else-if="isValue(data)" :key-string="getKey(data)" :data="data.value" :path="path" :modifiable="modifiable" :current-depth="currentDepth" class="item item-leaf" @change-data="onChangeData"/>
+  <consul-view-item-value v-else-if="isValue(data)" :key-string="getKey(data)" :data="data.value" :path="path" :modifiable="modifiable" :current-depth="currentDepth" class="item item-leaf" @change-data="onChangeData"/>
 
 </template>
 
 <script>
 import _ from "lodash"
-import TreeViewItemValue from "~/components/jsoneditor/TreeViewItemValue.vue"
-import object from "~/lib/utils/object"
+import ConsulViewItemValue from "~/components/consul-editor/ConsulViewItemValue.vue"
 
 export default {
-  name: "TreeViewItem",
+  name: "ConsulViewItem",
   components: {
-    TreeViewItemValue
+    ConsulViewItemValue
   },
   props: {
     data: {
@@ -117,8 +116,16 @@ export default {
       dialogDeleteKeyPath: false,
       dialogCreateKeyPath: false,
       displayKeyValueField: true,
-      keyValue: "",
-      keyChild: ""
+      newKeyValue: {
+        path: this.path,
+        key: "",
+        value: ""
+      },
+      defaultKeyValue: {
+        path: this.path,
+        key: "",
+        value: ""
+      }
     }
   },
   computed: {
@@ -158,9 +165,9 @@ export default {
     }
   },
   watch: {
-    keyChild: function() {
+    "newKeyValue.key": function(newValue) {
       // Just for avoiding error while running eslint
-      if (this.keyChild[this.keyChild.length - 1] == "/") {
+      if (newValue[newValue.length - 1] == "/") {
         this.displayKeyValueField = false
       } else {
         this.displayKeyValueField = true
@@ -222,55 +229,12 @@ export default {
       return "depth-" + depth
     },
     saveDeletedKeyPath: function() {
-      var keyPathModifList = _.cloneDeep(this.$store.state.keyPathModifList)
-      keyPathModifList.push({ path: this.path, value: "", type: "R" })
-      this.$store.dispatch("updateKeyPathModifList", keyPathModifList)
-
+      this.$root.$emit("delete-key-path", this.path)
       this.dialogDeleteKeyPath = false
-      this.showSuccessDeleteMsg()
     },
-    saveCreatedKeyPath: function(child, value) {
-      var keyPathModifList = _.cloneDeep(this.$store.state.keyPathModifList)
-      var curKeyPathObject = _.cloneDeep(this.$store.state.keyPathObject)
-      var path = this.path
-
-      if (child[child.length - 1] == "/") {
-        keyPathModifList.push({ path: path + child, value: null, type: "A" })
-        // Set new value
-        object.createObjectByPath(
-          curKeyPathObject,
-          "/",
-          this.path + child,
-          null
-        )
-      } else {
-        // Split child if it has multiple levels
-        // Loop and add each level to modified path list to handle color
-        var arr = child.split("/")
-        for (var i = 0; i < arr.length; i++) {
-          if (i < arr.length - 1) {
-            path = path + arr[i] + "/"
-            keyPathModifList.push({ path: path, value: null, type: "A" })
-          } else {
-            path = path + arr[i]
-            keyPathModifList.push({ path: path, value: value, type: "A" })
-          }
-        }
-        // Set new value
-        object.createObjectByPath(
-          curKeyPathObject,
-          "/",
-          this.path + child,
-          value
-        )
-      }
-
-      this.$store.dispatch("updateKeyPathModifList", keyPathModifList)
-      // Update store
-      this.$store.dispatch("updateKeyPathObject", curKeyPathObject)
-
+    saveCreatedKeyPath: function() {
+      this.$root.$emit("add-key-path", this.newKeyValue)
       this.dialogCreateKeyPath = false
-      this.showSuccessCreateMsg()
     }
   },
   notifications: {

@@ -28,26 +28,59 @@
         </v-card>
       </v-flex>
     </v-data-iterator>
+    <loader v-model="dlgLoading" />
   </v-container>
 </template>
 
 <script>
-import consul from "~/lib/consul/consul"
+import Loader from "~/components/loader/loader.vue"
 
 export default {
+  components: {
+    Loader
+  },
   data: () => {
     return {
       rowsPerPageItems: [4, 8, 12],
       pagination: {
         rowsPerPage: 4
-      }
+      },
+      nodes: [],
+      dlgLoading: false
     }
   },
-  // computed: {
-  //  nodes () { return consul.health.getAllNodeHealths(this.$store.state.nodes) }
-  // }
-  async asyncData({ store }) {
-    return { nodes: await consul.health.getAllNodeHealths(store.state.nodes) }
+  mounted: async function() {
+    try {
+      this.dlgLoading = true
+
+      let datacenters = this.$consul.coordinate.getDatacenters(
+        this.$store.state.ctok
+      )
+      this.$store.dispatch("selectDatacenter", datacenters[0])
+      this.$store.dispatch("updateListDatacenters", datacenters)
+
+      let nodes = this.$consul.coordinate.getNodes(this.$store.state.ctok)
+      this.$store.dispatch("updateListNodes", nodes)
+
+      this.nodes = this.$consul.health.getAllNodeHealths(this.$store.state.ctok)
+
+      this.dlgLoading = false
+    } catch (error) {
+      this.dlgLoading = false
+      this.showMsg({ type: "error", message: error })
+    }
+  },
+  //async asyncData({ store }) {
+  //return {
+  //nodes: await this.$consul.health.getAllNodeHealths(store.state.nodes)
+  //}
+  //}
+  notifications: {
+    showMsg: {
+      type: "success",
+      title: "",
+      message: ""
+    }
   }
 }
 </script>

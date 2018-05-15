@@ -25,10 +25,15 @@ module.exports = {
       }
     ]
   },
+  modules: ["@nuxtjs/axios"],
+  axios: {
+    // proxyHeaders: false
+  },
   plugins: [
     "~/plugins/vuetify.js",
     "~/plugins/vue-notifications.js",
-    { src: "~/plugins/local-storage.js", ssr: false }
+    "~/plugins/consul.js"
+    /*{ src: "~/plugins/local-storage.js", ssr: false }*/
   ],
   css: ["~/assets/style/app.styl"],
   /*
@@ -38,10 +43,6 @@ module.exports = {
   /*
   ** Build configuration
   */
-  axios: {
-    proxyHeaders: false,
-    credentials: false
-  },
   build: {
     vendor: ["~/plugins/vuetify.js", "axios", "vue-notifications", "toastr"],
     extractCSS: true,

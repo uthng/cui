@@ -1,17 +1,17 @@
 <template>
-  <div class="tree-view-wrapper">
-    <tree-view-item :data="parsedData" :max-depth="allOptions.maxDepth" :current-depth="0" :modifiable="allOptions.modifiable" class="item-root" path="" @change-data="onChangeData"/>
+  <div class="consul-view-wrapper">
+    <consul-view-item :data="parsedData" :max-depth="allOptions.maxDepth" :current-depth="0" :modifiable="allOptions.modifiable" class="item-root" path="" @change-data="onChangeData"/>
   </div>
 </template>
 
 <script>
 import _ from "lodash"
-import TreeViewItem from "~/components/jsoneditor/TreeViewItem.vue"
+import ConsulViewItem from "~/components/consul-editor/ConsulViewItem.vue"
 
 export default {
-  name: "TreeView",
+  name: "ConsulView",
   components: {
-    TreeViewItem
+    ConsulViewItem
   },
   props: {
     data: {
@@ -138,7 +138,7 @@ export default {
 </script>
 
 <style>
-.tree-view-wrapper {
+.consul-view-wrapper {
   overflow: auto;
 }
 

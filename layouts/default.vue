@@ -142,7 +142,7 @@ export default {
       this.$store.dispatch("selectDatacenter", dc)
     },
     saveToken: function() {
-      this.$store.dispatch("setConsulToken", this.consulToken)
+      this.$store.dispatch("setCtok", this.consulToken)
       this.dialogLogin = false
       this.showMsg({ message: "Token has been saved successfully !" })
     }
