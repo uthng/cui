@@ -30,7 +30,7 @@ export default {
       return _.extend(
         {},
         {
-          rootObjectKey: "root",
+          rootObjectKey: "consul",
           maxDepth: 4,
           modifiable: false
         },

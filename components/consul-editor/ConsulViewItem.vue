@@ -22,7 +22,7 @@
         <v-card-text>
           <v-container fluid class="px-3">
             <v-layout row wrap>
-              <v-flex xs6>
+              <v-flex xs12>
                 <v-text-field
                   :value="newKeyValue.path"
                   name="key-parent"
@@ -30,7 +30,7 @@
                   disabled
                 />
               </v-flex>
-              <v-flex xs6>
+              <v-flex xs12>
                 <v-text-field
                   v-model="newKeyValue.key"
                   name="key-child"
@@ -45,7 +45,7 @@
                   v-model="newKeyValue.value"
                   name="key-value"
                   label="Value"
-                  textarea
+                  multi-line
                   rows="10"
                 />
               </v-flex>

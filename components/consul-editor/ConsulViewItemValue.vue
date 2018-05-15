@@ -29,7 +29,7 @@
                   v-model="editedKey.value"
                   name="key-value"
                   label="Value"
-                  textarea
+                  multi-line
                   rows="10"
                 />
               </v-flex>
