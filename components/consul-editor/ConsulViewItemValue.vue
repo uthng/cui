@@ -4,9 +4,9 @@
     <input v-if="modifiable" :class="getValueType(data)" v-model="valueString" class="item-value" @keyup.enter="onUpdateData" @blur="onUpdateData">
     <div v-else :class="getValueType(data)" class="item-value">{{ valueFormed }}</div>
     <div class="item-icons">
-      <v-btn icon small class="ma-0 pa-0" @click.stop="dialogModifyKeyValue = !dialogModifyKeyValue"><v-icon small>create</v-icon></v-btn>
-      <v-btn icon small disabled class="ma-0 pa-0"><v-icon small>add</v-icon></v-btn>
-      <v-btn icon small class="ma-0 pa-0" @click.stop="dialogDeleteKeyPath = true"><v-icon small>delete</v-icon></v-btn>
+      <v-btn :disabled="isBtnDisabled('edit')" icon small class="ma-0 pa-0" @click.stop="dialogModifyKeyValue = !dialogModifyKeyValue"><v-icon small>edit</v-icon></v-btn>
+      <v-btn disabled icon small class="ma-0 pa-0"><v-icon small>add</v-icon></v-btn>
+      <v-btn :disabled="isBtnDisabled('delete')" icon small class="ma-0 pa-0" @click.stop="dialogDeleteKeyPath = true"><v-icon small>delete</v-icon></v-btn>
     </div>
     <v-dialog v-model="dialogModifyKeyValue" persistent max-width="700px">
       <v-card>
@@ -87,6 +87,10 @@ export default {
     keyString: {
       type: String,
       required: true
+    },
+    permissions: {
+      type: Array,
+      required: true
     }
   },
   data: function() {
@@ -126,6 +130,9 @@ export default {
       }
 
       return color
+    },
+    permission: function() {
+      return this.getKeyPermission()
     }
   },
   methods: {
@@ -205,6 +212,58 @@ export default {
     saveDeletedKeyPath: function() {
       this.$root.$emit("delete-key-value", this.path)
       this.dialogDeleteKeyPath = false
+    },
+    getKeyPermission: function() {
+      let perm = ""
+
+      // If path = root
+      if (this.path === "") {
+        return perm
+      }
+
+      //console.log(JSON.stringify(this.unfoldPaths))
+      // Check if key in path, if not disable all
+      for (var i = 0; i < this.permissions.length; i++) {
+        let permission = this.permissions[i]
+
+        if (permission.key === "" || permission.key == this.path) {
+          perm = permission.policy
+        } else {
+          if (
+            (permission.key.endsWith("*") &&
+              this.path.startsWith(permission.key.replace("*", ""))) ||
+            this.path.startsWith(permission.key)
+          ) {
+            perm = permission.policy
+          }
+        }
+      }
+
+      //console.log("path final: " + this.path + " permissions " + permissions)
+      return perm
+    },
+    isBtnDisabled: function(btnName) {
+      // permission: deny => not showed automatically in the tree view => no need
+      // handle when permission deny
+      let permission = "read"
+
+      if (btnName === "add" || btnName === "edit" || btnName === "delete") {
+        permission = "write"
+      }
+
+      if (this.permission === "") {
+        return true
+      }
+
+      if (permission === "read" && this.permission === permission) {
+        return true
+      }
+
+      if (permission === "write" && this.permission === permission) {
+        return false
+      }
+
+      return true
     }
   },
   notifications: {

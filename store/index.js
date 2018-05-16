@@ -12,6 +12,7 @@ export const SET_CTOK_EXPIRATION = "SET_CTOK_EXPIRATION"
 export const UPDATE_CONSULACLLIST = "UPDATE_CONSULACLLIST"
 export const UPDATE_KEYPATHOBJECT = "UPDATE_KEYPATHOBJECT"
 export const UPDATE_KEYPATHMODIFLIST = "UPDATE_KEYPATHMODIFLIST"
+export const UPDATE_KEYPERMISSIONS = "UPDATE_KEYPERMISSIONS"
 
 export const state = () => ({
   sidebar: false,
@@ -23,7 +24,8 @@ export const state = () => ({
   keyPathObject: {},
   keyPathModifList: [],
   ctok: "",
-  ctok_expiration: 0
+  ctok_expiration: 0,
+  keyPermissions: []
 })
 
 export const mutations = {
@@ -65,6 +67,10 @@ export const mutations = {
 
   UPDATE_KEYPATHMODIFLIST(state, data) {
     state.keyPathModifList = [...data]
+  },
+
+  UPDATE_KEYPERMISSIONS(state, data) {
+    state.keyPermissions = [...data]
   }
 }
 
@@ -123,5 +129,9 @@ export const actions = {
 
   updateAclStatus({ commit }, status) {
     commit(UPDATE_ACLSTATUS, status)
+  },
+
+  updateKeyPermissions({ commit }, perms) {
+    commit(UPDATE_KEYPERMISSIONS, perms)
   }
 }

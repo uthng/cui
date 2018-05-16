@@ -44,7 +44,13 @@ module.exports = {
   ** Build configuration
   */
   build: {
-    vendor: ["~/plugins/vuetify.js", "axios", "vue-notifications", "toastr"],
+    vendor: [
+      "~/plugins/vuetify.js",
+      "axios",
+      "vue-notifications",
+      "toastr",
+      "gopher-hcl"
+    ],
     extractCSS: true,
     /*
     ** Run ESLint on save
