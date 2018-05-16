@@ -43,7 +43,7 @@ export default {
     return {
       rowsPerPageItems: [4, 8, 12],
       pagination: {
-        rowsPerPage: 4
+        rowsPerPage: 8
       },
       nodes: [],
       dlgLoading: false
