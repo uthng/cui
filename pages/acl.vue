@@ -176,7 +176,7 @@ export default {
   mounted: async function() {
     try {
       this.dlgLoading = true
-      this.loadData()
+      await this.loadData()
 
       this.dlgLoading = false
     } catch (error) {
