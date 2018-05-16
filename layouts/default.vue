@@ -90,11 +90,17 @@
       </v-card>
     </v-dialog>
 
+    <loader v-model="dlgLoading" :text="loadingText"/>
   </v-app>
 </template>
 
 <script>
+import Loader from "~/components/loader/loader.vue"
+
 export default {
+  components: {
+    Loader
+  },
   data() {
     return {
       clipped: false,
@@ -110,7 +116,9 @@ export default {
       rightDrawer: false,
       title: "Consul Web UI",
       dialogLogin: false,
-      consulToken: this.$store.state.ctok
+      consulToken: this.$store.state.ctok,
+      dlgLoading: false,
+      loadingText: "Loading..."
     }
   },
   computed: {
@@ -135,6 +143,8 @@ export default {
           preventDuplicates: true
         }
       })
+    } else {
+      this.checkToken()
     }
   },
   methods: {
@@ -145,6 +155,59 @@ export default {
       this.$store.dispatch("setCtok", this.consulToken)
       this.dialogLogin = false
       this.showMsg({ message: "Token has been saved successfully !" })
+    },
+    renewToken: function() {
+      try {
+        this.loadingText = "Renewing token..."
+        this.dlgLoading = true
+
+        this.$store.dispatch("setCtok", this.$store.state.ctok)
+
+        this.showMsg({
+          message: "Your current Consul token has been renew successfully !"
+        })
+        this.dlgLoading = false
+      } catch (error) {
+        this.dlgLoading = false
+        this.showMsg({ type: "error", message: error })
+      }
+    },
+    // Set timeout for checking ctok expiration time every 1min.
+    // While token expiration is stil valid, we call recursively this function
+    // If the token will expire within 5 mins, a notification will be display
+    // to user to renew. No need to clear timeout or anything after token expiration
+    // instead of timer
+    checkToken: function() {
+      var self = this
+      setTimeout(function() {
+        if (self.$store.state.ctok !== "") {
+          let now = new Date().getTime()
+          let secs = (self.$store.state.ctok_expiration - now) / 1000
+          if (secs > 0) {
+            let mins = secs / 60
+            if (mins <= 10) {
+              self.showMsg({
+                type: "warn",
+                title: "",
+                message:
+                  "Your Consul token will expire within 5 mins !!! Click here to renew it !",
+                opts: {
+                  closeButton: false,
+                  positionClass: "toast-top-full-width",
+                  timeOut: "30000",
+                  extendedTimeOut: "0",
+                  preventDuplicates: true,
+                  onclick: function() {
+                    self.renewToken()
+                  }
+                }
+              })
+            }
+
+            self.checkToken()
+          }
+        }
+      }, 60000)
     }
   },
   notifications: {
