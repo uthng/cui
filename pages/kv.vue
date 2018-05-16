@@ -12,7 +12,7 @@
         </div>
       </v-flex>
       <v-flex xs12>
-        <consul-view :data="jsonSource" :options="{maxDepth: 7}"/>
+        <consul-view :data="jsonSource" :permissions="keyPermissions" :options="{maxDepth: 7}"/>
       </v-flex>
     </v-layout>
     <loader v-model="dlgLoading" />
@@ -38,6 +38,9 @@ export default {
   computed: {
     jsonSource() {
       return this.$store.state.keyPathObject
+    },
+    keyPermissions: function() {
+      return this.$store.state.keyPermissions
     },
     nbModifications() {
       return this.$store.state.keyPathModifList.length
@@ -68,6 +71,8 @@ export default {
       this.dlgLoading = true
 
       await this.getRecurseKv("")
+
+      await this.getKeyPolicies()
 
       this.dlgLoading = false
     } catch (error) {
@@ -255,6 +260,31 @@ export default {
       this.showMsg({
         message: "The key " + path + " has been added to remove!"
       })
+    },
+    getKeyPolicies: async function() {
+      try {
+        let tokenRules = await this.$consul.acl.read(this.$store.state.ctok)
+        let keyPerms = []
+
+        // Just looping policies and add only keys begining with secret/
+        for (var policy in tokenRules) {
+          if (tokenRules.hasOwnProperty(policy)) {
+            if (policy === "key" || policy === "node") {
+              let keys = tokenRules[policy]
+
+              for (var key in keys) {
+                if (keys.hasOwnProperty(key)) {
+                  keyPerms.push({ key: key, policy: keys[key]["policy"] })
+                }
+              }
+            }
+          }
+        }
+
+        this.$store.dispatch("updateKeyPermissions", keyPerms)
+      } catch (error) {
+        this.showMsg({ type: "error", message: error })
+      }
     }
   },
   notifications: {

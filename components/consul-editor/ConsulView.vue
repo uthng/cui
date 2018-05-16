@@ -1,6 +1,6 @@
 <template>
   <div class="consul-view-wrapper">
-    <consul-view-item :data="parsedData" :max-depth="allOptions.maxDepth" :current-depth="0" :modifiable="allOptions.modifiable" class="item-root" path="" @change-data="onChangeData"/>
+    <consul-view-item :data="parsedData" :permissions="permissions" :max-depth="allOptions.maxDepth" :current-depth="0" :modifiable="allOptions.modifiable" class="item-root" path="" @change-data="onChangeData"/>
   </div>
 </template>
 
@@ -23,6 +23,10 @@ export default {
       default: function() {
         return {}
       }
+    },
+    permissions: {
+      type: Array,
+      required: true
     }
   },
   computed: {

@@ -6,13 +6,13 @@
         <span v-show="!isOpen() && data.children.length === 1" class="item-hint"> ({{ data.children.length }} {{ isObject(data) ? 'property' : 'item' }})</span>
         <span v-show="!isOpen() && data.children.length !== 1" class="item-hint"> ({{ data.children.length }} {{ isObject(data) ? 'properties' : 'items' }})</span>
         <span class="item-actions">
-          <v-btn icon small disabled class="ma-0 pa-0"><v-icon small>create</v-icon></v-btn>
-          <v-btn icon small class="ma-0 pa-0" @click.stop="dialogCreateKeyPath = true"><v-icon small>add</v-icon></v-btn>
-          <v-btn icon small class="ma-0 pa-0" @click.stop="dialogDeleteKeyPath = true"><v-icon small>delete</v-icon></v-btn>
+          <v-btn disabled icon small class="ma-0 pa-0"><v-icon small>edit</v-icon></v-btn>
+          <v-btn :disabled="isBtnDisabled('add')" icon small class="ma-0 pa-0" @click.stop="dialogCreateKeyPath = true"><v-icon small>add</v-icon></v-btn>
+          <v-btn :disabled="isBtnDisabled('delete')" icon small class="ma-0 pa-0" @click.stop="dialogDeleteKeyPath = true"><v-icon small>delete</v-icon></v-btn>
         </span>
       </div>
     </div>
-    <consul-view-item v-for="child in data.children" v-show="isOpen()" :key="getKey(child)" :max-depth="maxDepth" :current-depth="currentDepth+1" :data="child" :path="getPath(child)" :modifiable="modifiable" @change-data="onChangeData"/>
+    <consul-view-item v-for="child in data.children" v-show="isOpen()" :key="getKey(child)" :max-depth="maxDepth" :current-depth="currentDepth+1" :data="child" :permissions="permissions" :path="getPath(child)" :modifiable="modifiable" @change-data="onChangeData"/>
 
     <v-dialog v-model="dialogCreateKeyPath" persistent max-width="700px">
       <v-card>
@@ -75,7 +75,7 @@
     </v-dialog>
 
   </div>
-  <consul-view-item-value v-else-if="isValue(data)" :key-string="getKey(data)" :data="data.value" :path="path" :modifiable="modifiable" :current-depth="currentDepth" class="item item-leaf" @change-data="onChangeData"/>
+  <consul-view-item-value v-else-if="isValue(data)" :key-string="getKey(data)" :data="data.value" :permissions="permissions" :path="path" :modifiable="modifiable" :current-depth="currentDepth" class="item item-leaf" @change-data="onChangeData"/>
 
 </template>
 
@@ -107,6 +107,10 @@ export default {
     },
     path: {
       type: String,
+      required: true
+    },
+    permissions: {
+      type: Array,
       required: true
     }
   },
@@ -162,6 +166,9 @@ export default {
       }
 
       return color
+    },
+    permission: function() {
+      return this.getKeyPermission()
     }
   },
   watch: {
@@ -235,6 +242,56 @@ export default {
     saveCreatedKeyPath: function() {
       this.$root.$emit("add-key-path", this.newKeyValue)
       this.dialogCreateKeyPath = false
+    },
+    getKeyPermission: function() {
+      let perm = ""
+
+      // If path = root
+      if (this.path === "") {
+        return perm
+      }
+
+      //console.log(JSON.stringify(this.unfoldPaths))
+      // Check if key in path, if not disable all
+      for (var i = 0; i < this.permissions.length; i++) {
+        let permission = this.permissions[i]
+        if (permission.key === "" || permission.key == this.path) {
+          perm = permission.policy
+        } else {
+          if (
+            permission.key.endsWith("*") &&
+            this.path.startsWith(permission.key.replace("*", ""))
+          ) {
+            perm = permission.policy
+          }
+        }
+      }
+
+      //console.log("path final: " + this.path + " permissions " + permissions)
+      return perm
+    },
+    isBtnDisabled: function(btnName) {
+      // permission: deny => not showed automatically in the tree view => no need
+      // handle when permission deny
+      let permission = "read"
+
+      if (btnName === "add" || btnName === "edit" || btnName === "delete") {
+        permission = "write"
+      }
+
+      if (this.permission === "") {
+        return true
+      }
+
+      if (permission === "read" && this.permission === permission) {
+        return true
+      }
+
+      if (permission === "write" && this.permission === permission) {
+        return false
+      }
+
+      return true
     }
   },
   notifications: {
