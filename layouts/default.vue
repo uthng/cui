@@ -115,7 +115,7 @@ export default {
   },
   computed: {
     datacenters() {
-      return this.$store.state.datacenters
+      return this.$store.state.listDatacenters
     },
     selectedDatacenter() {
       return this.$store.state.selectedDatacenter

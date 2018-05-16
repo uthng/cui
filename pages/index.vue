@@ -20,7 +20,7 @@
           <v-card-title><h4>{{ props.item.name }}</h4></v-card-title>
           <v-divider/>
           <v-list dense>
-            <v-list-tile v-for="status in props.item.statuses" :key="status" value="status">
+            <v-list-tile v-for="(status, index) in props.item.statuses" :key="index" value="status">
               <v-list-tile-content>{{ status.name }}:</v-list-tile-content>
               <v-list-tile-content class="align-end">{{ status.status }}</v-list-tile-content>
             </v-list-tile>
