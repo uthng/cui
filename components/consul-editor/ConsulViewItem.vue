@@ -161,7 +161,8 @@ export default {
   },
   data: function() {
     return {
-      open: this.currentDepth < this.maxDepth,
+      //open: this.currentDepth < this.maxDepth,
+      open: this.currentDepth <= 3,
       dialogDeleteKeyPath: false,
       dialogCreateKeyPath: false,
       dialogCloneKeyPath: false,
