@@ -53,13 +53,6 @@ export default {
     try {
       this.dlgLoading = true
 
-      let datacenters = await this.$consul.coordinate.getDatacenters(
-        this.$store.state.ctok
-      )
-
-      this.$store.dispatch("selectDatacenter", datacenters[0])
-      this.$store.dispatch("updateListDatacenters", datacenters)
-
       let nodes = await this.$consul.coordinate.getNodes(this.$store.state.ctok)
       this.$store.dispatch("updateListNodes", nodes)
 
