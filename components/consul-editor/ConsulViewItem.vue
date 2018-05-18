@@ -401,6 +401,10 @@ export default {
   padding: 5px;
 }
 
+.item:hover {
+  background-color: #424242;
+}
+
 .item-node {
   cursor: pointer;
   position: relative;
