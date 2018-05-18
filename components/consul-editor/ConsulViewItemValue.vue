@@ -6,6 +6,7 @@
     <div class="item-icons">
       <v-btn :disabled="isBtnDisabled('edit')" icon small class="ma-0 pa-0" @click.stop="dialogModifyKeyValue = !dialogModifyKeyValue"><v-icon small>edit</v-icon></v-btn>
       <v-btn disabled icon small class="ma-0 pa-0"><v-icon small>add</v-icon></v-btn>
+      <v-btn disabled icon small class="ma-0 pa-0" @click.stop=""><v-icon small>file_copy</v-icon></v-btn>
       <v-btn :disabled="isBtnDisabled('delete')" icon small class="ma-0 pa-0" @click.stop="dialogDeleteKeyPath = true"><v-icon small>delete</v-icon></v-btn>
     </div>
     <v-dialog v-model="dialogModifyKeyValue" persistent max-width="700px">

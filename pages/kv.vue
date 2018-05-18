@@ -57,6 +57,11 @@ export default {
       this.deleteKeyPath(data)
     })
 
+    // Listen event to clone key path
+    this.$root.$on("clone-key-path", data => {
+      this.cloneKeyPath(data)
+    })
+
     // Listen event to modify key value
     this.$root.$on("modify-key-value", data => {
       this.modifyKeyValue(data)
@@ -142,6 +147,8 @@ export default {
           transactions.push(txn)
         }
 
+        //console.log("transaction " + JSON.stringify(transactions))
+
         await this.$consul.transactions.applyMultiKeys(
           transactions,
           this.$store.state.ctok
@@ -204,7 +211,7 @@ export default {
       var keyPathModifList = _.cloneDeep(this.$store.state.keyPathModifList)
       var curKeyPathObject = _.cloneDeep(this.$store.state.keyPathObject)
 
-      // Because of using transaction, we can delete a key path which is not
+      // Because of using transaction, we cannt delete a key path which is not
       // empty. So this recursive function tries to add all child path to
       // remove
       function recurse(keyPath) {
@@ -228,11 +235,53 @@ export default {
 
       recurse(path)
 
-      keyPathModifList.push({ path: path, value: "", type: "R" })
-
       this.$store.dispatch("updateKeyPathModifList", keyPathModifList)
       this.showMsg({
         message: "The key " + path + " has been added to remove!"
+      })
+    },
+    cloneKeyPath: function(kv) {
+      var keyPathModifList = _.cloneDeep(this.$store.state.keyPathModifList)
+      var curKeyPathObject = _.cloneDeep(this.$store.state.keyPathObject)
+      var path = kv.path + kv.key.substr(0, kv.key.lastIndexOf("/"))
+
+      console.log("curKey " + JSON.stringify(curKeyPathObject))
+      var value = object.getObjectValueByPath(curKeyPathObject, "/", path)
+
+      path = kv.path + kv.newKey.substr(0, kv.newKey.lastIndexOf("/"))
+
+      object.createObjectByPath(curKeyPathObject, "/", path, value)
+
+      // Because of using transaction, we cannt add a key path which has object as
+      // children. So this recursive function tries to add all child path to
+      // create
+      function recurse(path, val) {
+        keyPathModifList.push({ path: path, value: "", type: "A" })
+        for (var key in val) {
+          if (val.hasOwnProperty(key)) {
+            if (_.isObject(val[key])) {
+              recurse(path + key + "/", val[key])
+            } else {
+              keyPathModifList.push({
+                path: path + key,
+                value: val[key],
+                type: "A"
+              })
+            }
+          }
+        }
+      }
+
+      recurse(path + "/", value)
+
+      //console.log(JSON.stringify(keyPathModifList))
+
+      this.$store.dispatch("updateKeyPathModifList", keyPathModifList)
+      // Update store
+      this.$store.dispatch("updateKeyPathObject", curKeyPathObject)
+      this.showMsg({
+        message:
+          "New key " + kv.path + "/" + kv.value + " has been added to create!"
       })
     },
     modifyKeyValue: function(kv) {
@@ -269,7 +318,7 @@ export default {
         // Just looping policies and add only keys begining with secret/
         for (var policy in tokenRules) {
           if (tokenRules.hasOwnProperty(policy)) {
-            if (policy === "key" || policy === "node") {
+            if (policy === "key") {
               let keys = tokenRules[policy]
 
               for (var key in keys) {
@@ -280,6 +329,8 @@ export default {
             }
           }
         }
+
+        //console.log(JSON.stringify(keyPerms))
 
         this.$store.dispatch("updateKeyPermissions", keyPerms)
       } catch (error) {
