@@ -299,6 +299,7 @@ export default {
     saveCreatedKeyPath: function() {
       this.$root.$emit("add-key-path", this.newKeyValue)
       this.dialogCreateKeyPath = false
+      this.newKeyValue = Object.assign({}, this.defaultKeyValue)
     },
     getKeyPermission: function() {
       let perm = ""
@@ -374,6 +375,7 @@ export default {
     saveClonedKeyPath: function() {
       this.$root.$emit("clone-key-path", this.newKeyValue)
       this.dialogCloneKeyPath = false
+      this.newKeyValue = Object.assign({}, this.defaultKeyValue)
     }
   },
   notifications: {
