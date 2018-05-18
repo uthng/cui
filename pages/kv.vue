@@ -72,6 +72,7 @@ export default {
       this.deleteKeyValue(data)
     })
 
+    console.log("consul dc in kv " + this.$consul.dc)
     try {
       this.dlgLoading = true
 

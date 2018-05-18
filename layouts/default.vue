@@ -129,7 +129,7 @@ export default {
       return this.$store.state.selectedDatacenter
     }
   },
-  mounted: function() {
+  mounted: async function() {
     if (this.$store.state.consulAcl == false) {
       this.showMsg({
         type: "warn",
@@ -146,10 +146,21 @@ export default {
     } else {
       this.checkToken()
     }
+
+    let datacenters = await this.$consul.coordinate.getDatacenters(
+      this.$store.state.ctok
+    )
+
+    if (this.$store.state.selectedDatacenter === "") {
+      this.$store.dispatch("selectDatacenter", datacenters[0])
+    }
+
+    this.$store.dispatch("updateListDatacenters", datacenters)
   },
   methods: {
     selectDatacenter: function(dc) {
-      this.$store.dispatch("selectDatacenter", dc)
+      //this.$store.dispatch("selectDatacenter", dc)
+      this.$consul.dc = dc
     },
     saveToken: function() {
       this.$store.dispatch("setCtok", this.consulToken)
