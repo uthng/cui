@@ -140,7 +140,7 @@ export default {
               txn.KV.Value = buff.toString("base64")
             }
           } else if (list[i].type === "R") {
-            txn.KV.Verb = "delete"
+            txn.KV.Verb = "delete-tree"
           }
 
           txn.KV.Key = list[i].path
@@ -209,31 +209,13 @@ export default {
     },
     deleteKeyPath: function(path) {
       var keyPathModifList = _.cloneDeep(this.$store.state.keyPathModifList)
-      var curKeyPathObject = _.cloneDeep(this.$store.state.keyPathObject)
+      //var curKeyPathObject = _.cloneDeep(this.$store.state.keyPathObject)
 
-      // Because of using transaction, we cannt delete a key path which is not
-      // empty. So this recursive function tries to add all child path to
-      // remove
-      function recurse(keyPath) {
-        if (keyPath[keyPath.length - 1] == "/") {
-          keyPathModifList.push({ path: path, value: "", type: "R" })
-          let obj = object.getObjectValueByPath(
-            curKeyPathObject,
-            "/",
-            keyPath.substr(0, keyPath.length - 1)
-          )
-          for (var key in obj) {
-            if (obj.hasOwnProperty(key)) {
-              recurse(keyPath + key)
-            }
-          }
-        } else {
-          let obj = object.getObjectValueByPath(curKeyPathObject, "/", keyPath)
-          keyPathModifList.push({ path: keyPath, value: obj, type: "R" })
-        }
-      }
+      // Because we use delete-tree in transaction, so we dont care
+      // whether the key path has children or not and its value
+      keyPathModifList.push({ path: path, value: "", type: "R" })
 
-      recurse(path)
+      console.log(JSON.stringify(keyPathModifList))
 
       this.$store.dispatch("updateKeyPathModifList", keyPathModifList)
       this.showMsg({
@@ -245,7 +227,7 @@ export default {
       var curKeyPathObject = _.cloneDeep(this.$store.state.keyPathObject)
       var path = kv.path + kv.key.substr(0, kv.key.lastIndexOf("/"))
 
-      console.log("curKey " + JSON.stringify(curKeyPathObject))
+      //console.log("curKey " + JSON.stringify(curKeyPathObject))
       var value = object.getObjectValueByPath(curKeyPathObject, "/", path)
 
       path = kv.path + kv.newKey.substr(0, kv.newKey.lastIndexOf("/"))
