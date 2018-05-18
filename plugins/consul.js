@@ -3,7 +3,6 @@ import { CONSUL_API_URL } from "~/config"
 
 export default ({ app, store }, inject) => {
   // Create a new install Consul
-  console.log("plugin " + store.state.selectedDatacenter)
   let consul = new Consul(
     CONSUL_API_URL,
     app.$axios,

@@ -159,8 +159,7 @@ export default {
   },
   methods: {
     selectDatacenter: function(dc) {
-      //this.$store.dispatch("selectDatacenter", dc)
-      this.$consul.dc = dc
+      this.$store.dispatch("selectDatacenter", dc)
     },
     saveToken: function() {
       this.$store.dispatch("setCtok", this.consulToken)
