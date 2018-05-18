@@ -8,6 +8,7 @@
         <span class="item-actions">
           <v-btn disabled icon small class="ma-0 pa-0"><v-icon small>edit</v-icon></v-btn>
           <v-btn :disabled="isBtnDisabled('add')" icon small class="ma-0 pa-0" @click.stop="dialogCreateKeyPath = true"><v-icon small>add</v-icon></v-btn>
+          <v-btn :disabled="isBtnDisabled('clone')" icon small class="ma-0 pa-0" @click.stop="openDlgCloneKeyPath()"><v-icon small>file_copy</v-icon></v-btn>
           <v-btn :disabled="isBtnDisabled('delete')" icon small class="ma-0 pa-0" @click.stop="dialogDeleteKeyPath = true"><v-icon small>delete</v-icon></v-btn>
         </span>
       </div>
@@ -74,6 +75,50 @@
       </v-card>
     </v-dialog>
 
+    <v-dialog v-model="dialogCloneKeyPath" persistent max-width="500px">
+      <v-card>
+        <v-card-title>
+          <span class="headline">Clone Key</span>
+        </v-card-title>
+        <v-card-text>
+          <v-container fluid class="px-3">
+            <v-layout row wrap>
+              <v-flex xs12>
+                <v-text-field
+                  :value="newKeyValue.path"
+                  name="key-path"
+                  label="Path"
+                  disabled
+                />
+              </v-flex>
+              <v-flex xs12>
+                <v-text-field
+                  v-model="newKeyValue.key"
+                  name="key-oldkey"
+                  label="Old Key"
+                  disabled
+                  persistent-hint
+                />
+              </v-flex>
+              <v-flex xs12>
+                <v-text-field
+                  v-model="newKeyValue.newKey"
+                  :rules="[rules.keyFormat]"
+                  name="key-newkey"
+                  label="New Key"
+                  hint="The new key must be ended by /"
+                  required
+                />
+              </v-flex>
+            </v-layout>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" flat @click.stop="dialogCloneKeyPath=false">Close</v-btn>
+          <v-btn color="primary" flat @click.stop="saveClonedKeyPath()">Clone</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
   <consul-view-item-value v-else-if="isValue(data)" :key-string="getKey(data)" :data="data.value" :permissions="permissions" :path="path" :modifiable="modifiable" :current-depth="currentDepth" class="item item-leaf" @change-data="onChangeData"/>
 
@@ -119,16 +164,28 @@ export default {
       open: this.currentDepth < this.maxDepth,
       dialogDeleteKeyPath: false,
       dialogCreateKeyPath: false,
+      dialogCloneKeyPath: false,
       displayKeyValueField: true,
       newKeyValue: {
         path: this.path,
         key: "",
-        value: ""
+        value: "",
+        newKey: ""
       },
       defaultKeyValue: {
         path: this.path,
         key: "",
-        value: ""
+        value: "",
+        newKey: ""
+      },
+      rules: {
+        keyFormat: value => {
+          const pattern = /^[a-zA-Z0-9][/a-zA-Z0-9_-]+\/$/
+          return (
+            pattern.test(value) ||
+            "Method path must contain only: [a-zA-Z0-9_-] and must be ended by /"
+          )
+        }
       }
     }
   },
@@ -259,15 +316,16 @@ export default {
           perm = permission.policy
         } else {
           if (
-            permission.key.endsWith("*") &&
-            this.path.startsWith(permission.key.replace("*", ""))
+            (permission.key.endsWith("*") &&
+              this.path.startsWith(permission.key.replace("*", ""))) ||
+            this.path.startsWith(permission.key)
           ) {
             perm = permission.policy
           }
         }
       }
 
-      //console.log("path final: " + this.path + " permissions " + permissions)
+      // console.log("path final: " + this.path + " permissions " + perm)
       return perm
     },
     isBtnDisabled: function(btnName) {
@@ -277,6 +335,10 @@ export default {
 
       if (btnName === "add" || btnName === "edit" || btnName === "delete") {
         permission = "write"
+      }
+
+      if (btnName === "clone") {
+        return false
       }
 
       if (this.permission === "") {
@@ -292,6 +354,26 @@ export default {
       }
 
       return true
+    },
+    openDlgCloneKeyPath: function() {
+      // Clone only possible if current path has children (ended by "/")
+      // So when we split, the last element of the array is empty
+      // We must pop 2 times to get the real path parent
+      let keys = this.path.split("/")
+      // Pop empty element
+      keys.pop()
+
+      // Save old key and pop it
+      this.newKeyValue.key = keys[keys.length - 1] + "/"
+      keys.pop()
+
+      this.newKeyValue.path = keys.join("/") + "/"
+
+      this.dialogCloneKeyPath = true
+    },
+    saveClonedKeyPath: function() {
+      this.$root.$emit("clone-key-path", this.newKeyValue)
+      this.dialogCloneKeyPath = false
     }
   },
   notifications: {
