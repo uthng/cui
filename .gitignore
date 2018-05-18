@@ -1,4 +1,5 @@
 # dependencies
+/config.js
 node_modules
 
 # logs
@@ -9,5 +10,3 @@ npm-debug.log
 
 # Nuxt generate
 dist
-
-config.js

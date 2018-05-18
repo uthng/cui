@@ -42,7 +42,7 @@ export default {
   data: () => {
     return {
       dlgLoading: false,
-      folded: false
+      folded: true
     }
   },
   computed: {
