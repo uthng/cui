@@ -79,7 +79,6 @@ export const actions = {
     return new Promise(resolve => {
       // Get back cookie vtok  & user and set them to states
       let cookies = cookie.parse(context.req.headers.cookie || "")
-      console.log("cookies " + JSON.stringify(cookies))
       if (cookies.hasOwnProperty("cui_ctok")) {
         commit(SET_CTOK, cookies.cui_ctok)
       }

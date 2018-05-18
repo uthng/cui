@@ -238,6 +238,14 @@ export default {
       }
     }
   },
+  mounted: function() {
+    this.$root.$on("fold-event", () => {
+      // Fold/unfold only if it is not root
+      if (this.path !== "" && this.currentDepth > 3) {
+        this.toggleOpen()
+      }
+    })
+  },
   methods: {
     isOpen: function() {
       return this.open

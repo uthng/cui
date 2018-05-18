@@ -1,7 +1,16 @@
 <template>
   <v-container fluide>
     <v-layout row wrap>
-      <v-flex xs12>
+      <v-flex xs6>
+        <div class="text-xs-left mt-2">
+          <v-switch
+            :label="`${folded === true ? 'Folded' : 'Unfolded' }`"
+            v-model="folded"
+            @change="onSwitchChange"
+          />
+        </div>
+      </v-flex>
+      <v-flex xs6>
         <div class="text-xs-right mb-4">
           <v-badge left class="mx-0 px-0">
             <span slot="badge">{{ nbModifications }}</span>
@@ -32,7 +41,8 @@ export default {
   },
   data: () => {
     return {
-      dlgLoading: false
+      dlgLoading: false,
+      folded: false
     }
   },
   computed: {
@@ -318,6 +328,9 @@ export default {
       } catch (error) {
         this.showMsg({ type: "error", message: error })
       }
+    },
+    onSwitchChange: function() {
+      this.$root.$emit("fold-event", this.folded)
     }
   },
   notifications: {
