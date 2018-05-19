@@ -33,7 +33,7 @@ import _ from "lodash"
 import ConsulView from "~/components/consul-editor/ConsulView.vue"
 import Loader from "~/components/loader/loader.vue"
 import object from "~/lib/utils/object"
-
+import gopherhcl from "gopher-hcl"
 export default {
   components: {
     ConsulView,
@@ -304,18 +304,24 @@ export default {
     },
     getKeyPolicies: async function() {
       try {
-        let tokenRules = await this.$consul.acl.read(this.$store.state.ctok)
         let keyPerms = []
+        let token = await this.$consul.acl.read(this.$store.state.ctok)
 
-        // Just looping policies and add only keys begining with secret/
-        for (var policy in tokenRules) {
-          if (tokenRules.hasOwnProperty(policy)) {
-            if (policy === "key") {
-              let keys = tokenRules[policy]
+        if (token[0].Type === "management") {
+          keyPerms.push({ key: "", policy: "write" })
+        } else {
+          let tokenRules = gopherhcl.parse(token[0].Rules)
 
-              for (var key in keys) {
-                if (keys.hasOwnProperty(key)) {
-                  keyPerms.push({ key: key, policy: keys[key]["policy"] })
+          // Just looping policies and add only keys begining with secret/
+          for (var policy in tokenRules) {
+            if (tokenRules.hasOwnProperty(policy)) {
+              if (policy === "key") {
+                let keys = tokenRules[policy]
+
+                for (var key in keys) {
+                  if (keys.hasOwnProperty(key)) {
+                    keyPerms.push({ key: key, policy: keys[key]["policy"] })
+                  }
                 }
               }
             }
