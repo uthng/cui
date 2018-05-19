@@ -8,7 +8,7 @@ Another Web UI written in VueJS & NuxtJS to manage Consul easily. It uses direct
 - Node & Service Health dashboard
 - KV store:
   - Tree view editor to manage KV operations: create, clone, edit and delete
-  - Transaction support: all modifications are first saved locally with differnt colors. And then, they can be applied at once.
+  - Transaction support: all modifications are first saved locally with different colors. And then, they can be applied at once.
   - Clone: allow to copy a key with all its childrens to a new key under the same key parent
 - ACL: full management (create, edit and delete)
 
@@ -35,7 +35,7 @@ To run CUI using the Docker image:
 docker run -d --name cui -e CONSUL_API_URL=http://consul_api_url:8200/v1 -p 4000:3000 uthng/cui:0.2.0
 ```
 
-** Environment variables: **
+**Environment variables:**
 - CONSUL_API_URL: Consul endpoint with version
 
 
