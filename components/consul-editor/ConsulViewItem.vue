@@ -34,6 +34,7 @@
               <v-flex xs12>
                 <v-text-field
                   v-model="newKeyValue.key"
+                  :rules="[rules.keyFormat]"
                   name="key-child"
                   label="Key"
                   hint="To create a path without value (folder), end the key with /"
@@ -103,10 +104,10 @@
               <v-flex xs12>
                 <v-text-field
                   v-model="newKeyValue.newKey"
-                  :rules="[rules.keyFormat]"
+                  :rules="[rules.pathFormat]"
                   name="key-newkey"
                   label="New Key"
-                  hint="The new key must be ended by /"
+                  hint="The new key path must be ended by /"
                   required
                 />
               </v-flex>
@@ -180,11 +181,18 @@ export default {
         newKey: ""
       },
       rules: {
-        keyFormat: value => {
+        pathFormat: value => {
           const pattern = /^[a-zA-Z0-9][/a-zA-Z0-9_-]+\/$/
           return (
             pattern.test(value) ||
             "Method path must contain only: [a-zA-Z0-9_-] and must be ended by /"
+          )
+        },
+        keyFormat: value => {
+          const pattern = /^[a-zA-Z0-9][/a-zA-Z0-9_-]+[/a-zA-Z0-9]$/
+          return (
+            pattern.test(value) ||
+            "Method path must contain only: [a-zA-Z0-9_-] and must not be started or ended by - _"
           )
         }
       }
@@ -347,7 +355,13 @@ export default {
         permission = "write"
       }
 
-      if (btnName === "clone") {
+      // Enable add button for root
+      if (btnName === "add" && this.path === "") {
+        return false
+      }
+
+      // Only enable clone button for item not root
+      if (btnName === "clone" && this.path !== "") {
         return false
       }
 
