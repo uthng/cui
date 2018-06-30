@@ -62,7 +62,7 @@
     </v-content>
     <v-footer :fixed="fixed" app>
       <v-flex xs12 py-3 text-xs-center white--text>
-        &copy;2018 — <strong>Thanh NGUYEN</strong>
+        <strong>CUI {{ version }} - &copy;2018 — Thanh NGUYEN</strong>
       </v-flex>
     </v-footer>
     <v-dialog v-model="dialogLogin" persistent max-width="500px">
@@ -95,6 +95,7 @@
 </template>
 
 <script>
+import { version } from "~/package.json"
 import Loader from "~/components/loader/loader.vue"
 
 export default {
@@ -103,6 +104,7 @@ export default {
   },
   data() {
     return {
+      version: version,
       clipped: false,
       drawer: true,
       fixed: false,
