@@ -42,12 +42,12 @@
                 />
               </v-flex>
               <v-flex xs12>
-                <v-text-field
+                <v-textarea
                   v-if="displayKeyValueField"
                   v-model="newKeyValue.value"
                   name="key-value"
                   label="Value"
-                  multi-line
+                  auto-grow
                   rows="10"
                 />
               </v-flex>
