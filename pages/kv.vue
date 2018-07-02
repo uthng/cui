@@ -166,8 +166,8 @@ export default {
         this.dlgLoading = true
 
         var list = _.cloneDeep(this.$store.state.keyPathModifList)
-        console.log("list " + JSON.stringify(list))
         var transactions = []
+        var pathsToUpdate = []
 
         list.sort(function(a, b) {
           // Use toUpperCase() to ignore character casing
@@ -194,14 +194,27 @@ export default {
               let buff = Buffer.from(list[i].value, "ascii")
               txn.KV.Value = buff.toString("base64")
             }
+
+            pathsToUpdate.push(list[i].path)
           } else if (list[i].type === "R") {
             txn.KV.Verb = "delete-tree"
+
+            let p = list[i].path
+
+            // Get its parent key
+            if (p[p.length - 1] === "/") {
+              p = p.substr(0, p.lastIndexOf("/"))
+            }
+
+            p = p.substr(0, p.lastIndexOf("/") + 1)
+            pathsToUpdate.push(p)
           }
 
           txn.KV.Key = list[i].path
           transactions.push(txn)
         }
 
+        //console.log("pahts to Update " + JSON.stringify(pathsToUpdate))
         //console.log("transaction " + JSON.stringify(transactions))
 
         await this.$consul.transactions.applyMultiKeys(
@@ -209,7 +222,7 @@ export default {
           this.$store.state.ctok
         )
 
-        this.getRecurseKv([""])
+        this.getRecurseKv(pathsToUpdate)
 
         // reset modification list
         this.$store.dispatch("updateKeyPathModifList", [])

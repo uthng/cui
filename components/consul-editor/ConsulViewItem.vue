@@ -254,6 +254,12 @@ export default {
         this.toggleOpen()
       }
     })
+
+    this.$root.$on("close-key-path", data => {
+      if (this.currentDepth > data) {
+        this.open = false
+      }
+    })
   },
   methods: {
     isOpen: function() {
@@ -262,6 +268,8 @@ export default {
     toggleOpen: function() {
       if (!this.open) {
         this.$root.$emit("load-key-path", this.path)
+      } else {
+        this.$root.$emit("close-key-path", this.currentDepth)
       }
       this.open = !this.open
     },
