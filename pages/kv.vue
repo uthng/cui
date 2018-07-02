@@ -74,7 +74,17 @@ export default {
 
     // (Re)load key value
     this.$root.$on("load-key-path", data => {
-      this.getRecurseKv(data)
+      let modifs = this.$store.state.keyPathModifList
+
+      // Only reload on existing path, not on new added path
+      // still in modification list
+      let found = modifs.find(modif => {
+        return modif.path === data && modif.type === "A"
+      })
+
+      if (_.isNil(found)) {
+        this.getRecurseKv([data])
+      }
     })
 
     // Listen event to modify key value
@@ -90,7 +100,7 @@ export default {
     try {
       this.dlgLoading = true
 
-      await this.getRecurseKv("")
+      await this.getRecurseKv([""])
 
       await this.getKeyPolicies()
 
@@ -102,39 +112,45 @@ export default {
     }
   },
   methods: {
-    getRecurseKv: async function(path) {
+    getRecurseKv: async function(paths) {
       try {
         this.dlgLoading = true
         var mapPaths = _.cloneDeep(this.$store.state.keyPathObject)
+        var modifs = _.cloneDeep(this.$store.state.keyPathModifList)
         var keyPath = ""
 
+        // Check if path is in modification list and is a new path
         var kv = await this.$consul.kv.getDepthKeys(
-          path,
+          paths,
           this.$store.state.ctok,
           2
         )
 
-        //var kv = await this.$consul.kv.getRecurseKeys(
-        //  path,
-        //  this.$store.state.ctok
-        //)
-        //var mapPaths = {}
+        // Update the paths
+        for (let i = 0; i < paths.length; i++) {
+          let path = paths[i]
 
-        // Get value of key to base64 decoding
-        //for (var i = 0; i < kv.length; i++) {
-        //  // Create key path object
-        //  _.set(mapPaths, kv[i].key, kv[i].value)
-        //}
+          // Override the path's value
+          if (path !== "") {
+            //transform key to key object with dot
+            keyPath = this.convertKeyToPathObject(path)
 
-        // Override the path's value
-        if (path !== "") {
-          // transform key to key object with dot
-          keyPath = path.substr(0, path.lastIndexOf("/"))
-          keyPath = keyPath.replace(/\//gi, ".")
+            _.set(mapPaths, keyPath, _.get(kv, keyPath))
+          } else {
+            mapPaths = Object.assign(mapPaths, kv)
+          }
+        }
 
-          _.set(mapPaths, keyPath, _.get(kv, keyPath))
-        } else {
-          mapPaths = Object.assign(mapPaths, kv)
+        // Re-apply modifs
+        for (let i = 0; i < modifs.length; i++) {
+          let modif = modifs[i]
+          if (modif.type === "A" || modif.type === "M") {
+            let key = modif.path
+            let value = modif.value
+
+            key = this.convertKeyToPathObject(key)
+            _.set(mapPaths, key, value)
+          }
         }
 
         this.$store.dispatch("updateKeyPathObject", mapPaths)
@@ -193,7 +209,7 @@ export default {
           this.$store.state.ctok
         )
 
-        this.getRecurseKv("")
+        this.getRecurseKv([""])
 
         // reset modification list
         this.$store.dispatch("updateKeyPathModifList", [])
@@ -267,11 +283,12 @@ export default {
       var path = kv.path + kv.key.substr(0, kv.key.lastIndexOf("/"))
 
       //console.log("curKey " + JSON.stringify(curKeyPathObject))
-      var value = object.getObjectValueByPath(curKeyPathObject, "/", path)
+      var value = _.get(curKeyPathObject, this.convertKeyToPathObject(path))
 
+      console.log("value " + JSON.stringify(value))
       path = kv.path + kv.newKey.substr(0, kv.newKey.lastIndexOf("/"))
 
-      object.createObjectByPath(curKeyPathObject, "/", path, value)
+      _.set(curKeyPathObject, this.convertKeyToPathObject(path), value)
 
       // Because of using transaction, we cannt add a key path which has object as
       // children. So this recursive function tries to add all child path to
@@ -363,6 +380,17 @@ export default {
       } catch (error) {
         this.showMsg({ type: "error", message: error })
       }
+    },
+    convertKeyToPathObject: function(key) {
+      let path = key
+
+      if (path[path.length - 1] === "/") {
+        path = path.substr(0, path.lastIndexOf("/"))
+      }
+
+      path = path.replace(/\//gi, ".")
+
+      return path
     },
     onSwitchChange: function() {
       this.$root.$emit("fold-event", this.folded)
