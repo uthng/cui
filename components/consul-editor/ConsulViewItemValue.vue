@@ -26,11 +26,11 @@
                 />
               </v-flex>
               <v-flex xs12>
-                <v-text-field
+                <v-textarea
                   v-model="editedKey.value"
                   name="key-value"
                   label="Value"
-                  multi-line
+                  auto-grow
                   rows="10"
                 />
               </v-flex>
