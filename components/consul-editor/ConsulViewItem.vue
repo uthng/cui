@@ -529,4 +529,28 @@ export default {
 .depth-10 {
   padding-left: 195px;
 }
+
+.depth-11 {
+  padding-left: 215px;
+}
+
+.depth-12 {
+  padding-left: 235px;
+}
+
+.depth-13 {
+  padding-left: 255px;
+}
+
+.depth-14 {
+  padding-left: 275px;
+}
+
+.depth-15 {
+  padding-left: 295px;
+}
+
+.depth-16 {
+  padding-left: 315px;
+}
 </style>

@@ -21,7 +21,7 @@
         </div>
       </v-flex>
       <v-flex xs12>
-        <consul-view :data="jsonSource" :permissions="keyPermissions" :options="{maxDepth: 7}"/>
+        <consul-view :data="jsonSource" :permissions="keyPermissions" :options="{maxDepth: 16}"/>
       </v-flex>
     </v-layout>
     <loader v-model="dlgLoading" />
