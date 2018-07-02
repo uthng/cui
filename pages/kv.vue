@@ -287,7 +287,9 @@ export default {
       //console.log("curKey " + JSON.stringify(curKeyPathObject))
       var value = _.get(curKeyPathObject, this.convertKeyToPathObject(path))
 
-      path = kv.path + kv.newKey.substr(0, kv.newKey.lastIndexOf("/"))
+      // Comment below and clone to new complete path
+      //path = kv.path + kv.newKey.substr(0, kv.newKey.lastIndexOf("/"))
+      path = kv.newKey.substr(0, kv.newKey.lastIndexOf("/"))
 
       _.set(curKeyPathObject, this.convertKeyToPathObject(path), value)
 
