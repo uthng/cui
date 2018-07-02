@@ -182,6 +182,11 @@ export default {
             }
 
             pathsToUpdate.push(list[i].path)
+            this.$root.$emit(
+              "close-key-path",
+              list[i].path,
+              this.getKeyDepth(list[i].path)
+            )
           } else if (list[i].type === "R") {
             txn.KV.Verb = "delete-tree"
 
@@ -194,6 +199,7 @@ export default {
 
             p = p.substr(0, p.lastIndexOf("/") + 1)
             pathsToUpdate.push(p)
+            this.$root.$emit("close-key-path", p, this.getKeyDepth(p))
           }
 
           txn.KV.Key = list[i].path
@@ -396,6 +402,15 @@ export default {
     },
     onSwitchChange: function() {
       this.$root.$emit("fold-event", this.folded)
+    },
+    getKeyDepth: function(key) {
+      if (key[key.length - 1] === "/") {
+        key = key.substr(0, key.lastIndexOf("/"))
+      }
+
+      let arr = key.split("/")
+
+      return arr.length
     }
   },
   notifications: {

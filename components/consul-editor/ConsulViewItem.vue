@@ -255,8 +255,9 @@ export default {
       }
     })
 
-    this.$root.$on("close-key-path", data => {
-      if (this.currentDepth > data) {
+    this.$root.$on("close-key-path", (...data) => {
+      // Only close if this current path is a direct child of closed path
+      if (this.path.startsWith(data[0]) && this.currentDepth > data[1]) {
         this.open = false
       }
     })
@@ -269,7 +270,7 @@ export default {
       if (!this.open) {
         this.$root.$emit("load-key-path", this.path)
       } else {
-        this.$root.$emit("close-key-path", this.currentDepth)
+        this.$root.$emit("close-key-path", this.path, this.currentDepth)
       }
       this.open = !this.open
     },
