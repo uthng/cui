@@ -32,7 +32,7 @@
 import _ from "lodash"
 import ConsulView from "~/components/consul-editor/ConsulView.vue"
 import Loader from "~/components/loader/loader.vue"
-import object from "~/lib/utils/object"
+//import object from "~/lib/utils/object"
 import gopherhcl from "gopher-hcl"
 export default {
   components: {
@@ -169,20 +169,6 @@ export default {
         var transactions = []
         var pathsToUpdate = []
 
-        list.sort(function(a, b) {
-          // Use toUpperCase() to ignore character casing
-          const pathA = a.path.toUpperCase()
-          const pathB = b.path.toUpperCase()
-
-          let comparison = 0
-          if (pathA > pathB) {
-            comparison = 1
-          } else if (pathA < pathB) {
-            comparison = -1
-          }
-          return comparison * -1
-        })
-
         for (var i = 0; i < list.length; i++) {
           var txn = {}
           txn.KV = {}
@@ -244,7 +230,11 @@ export default {
       if (kv.key[kv.key.length - 1] == "/") {
         keyPathModifList.push({ path: path + kv.key, value: null, type: "A" })
         // Set new value
-        object.createObjectByPath(curKeyPathObject, "/", kv.path + kv.key, null)
+        _.set(
+          curKeyPathObject,
+          this.convertKeyToPathObject(kv.path + kv.key),
+          {}
+        )
       } else {
         // Split kv.key if it has multiple levels
         // Loop and add each level to modified path list to handle color
@@ -259,10 +249,9 @@ export default {
           }
         }
         // Set new value
-        object.createObjectByPath(
+        _.set(
           curKeyPathObject,
-          "/",
-          kv.path + kv.key,
+          this.convertKeyToPathObject(kv.path + kv.key),
           kv.value
         )
       }
@@ -298,7 +287,6 @@ export default {
       //console.log("curKey " + JSON.stringify(curKeyPathObject))
       var value = _.get(curKeyPathObject, this.convertKeyToPathObject(path))
 
-      console.log("value " + JSON.stringify(value))
       path = kv.path + kv.newKey.substr(0, kv.newKey.lastIndexOf("/"))
 
       _.set(curKeyPathObject, this.convertKeyToPathObject(path), value)
@@ -340,7 +328,7 @@ export default {
       // we use var with = simply
       var curKeyPathObject = _.cloneDeep(this.$store.state.keyPathObject)
       // Set new value
-      object.createObjectByPath(curKeyPathObject, "/", kv.key, kv.value)
+      _.set(curKeyPathObject, this.convertKeyToPathObject(kv.key), kv.value)
       // Update store
       this.$store.dispatch("updateKeyPathObject", curKeyPathObject)
 
@@ -388,7 +376,6 @@ export default {
         }
 
         //console.log(JSON.stringify(keyPerms))
-
         this.$store.dispatch("updateKeyPermissions", keyPerms)
       } catch (error) {
         this.showMsg({ type: "error", message: error })
