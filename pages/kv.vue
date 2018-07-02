@@ -72,6 +72,11 @@ export default {
       this.cloneKeyPath(data)
     })
 
+    // (Re)load key value
+    this.$root.$on("load-key-path", data => {
+      this.getRecurseKv(data)
+    })
+
     // Listen event to modify key value
     this.$root.$on("modify-key-value", data => {
       this.modifyKeyValue(data)
@@ -98,30 +103,54 @@ export default {
   },
   methods: {
     getRecurseKv: async function(path) {
-      var kv = await this.$consul.kv.getRecurseKeys(
-        path,
-        this.$store.state.ctok
-      )
-      var mapPaths = {}
+      try {
+        this.dlgLoading = true
+        var mapPaths = _.cloneDeep(this.$store.state.keyPathObject)
+        var keyPath = ""
 
-      // Get value of key to base64 decoding
-      for (var i = 0; i < kv.length; i++) {
-        var value = kv[i].Value
-        if (value !== undefined && value !== null) {
-          let buff = Buffer.from(value, "base64")
-          value = buff.toString("ascii")
+        var kv = await this.$consul.kv.getDepthKeys(
+          path,
+          this.$store.state.ctok,
+          2
+        )
+
+        //var kv = await this.$consul.kv.getRecurseKeys(
+        //  path,
+        //  this.$store.state.ctok
+        //)
+        //var mapPaths = {}
+
+        // Get value of key to base64 decoding
+        //for (var i = 0; i < kv.length; i++) {
+        //  // Create key path object
+        //  _.set(mapPaths, kv[i].key, kv[i].value)
+        //}
+
+        // Override the path's value
+        if (path !== "") {
+          // transform key to key object with dot
+          keyPath = path.substr(0, path.lastIndexOf("/"))
+          keyPath = keyPath.replace(/\//gi, ".")
+
+          _.set(mapPaths, keyPath, _.get(kv, keyPath))
+        } else {
+          mapPaths = Object.assign(mapPaths, kv)
         }
-        // Create key path object
-        object.createObjectByPath(mapPaths, "/", kv[i].Key, value)
-      }
 
-      this.$store.dispatch("updateKeyPathObject", mapPaths)
+        this.$store.dispatch("updateKeyPathObject", mapPaths)
+        this.dlgLoading = false
+      } catch (error) {
+        console.log(error)
+        this.dlgLoading = false
+        this.showMsg({ type: "error", message: error })
+      }
     },
     applyModifications: async function() {
       try {
         this.dlgLoading = true
 
         var list = _.cloneDeep(this.$store.state.keyPathModifList)
+        console.log("list " + JSON.stringify(list))
         var transactions = []
 
         list.sort(function(a, b) {
@@ -225,7 +254,7 @@ export default {
       // whether the key path has children or not and its value
       keyPathModifList.push({ path: path, value: "", type: "R" })
 
-      console.log(JSON.stringify(keyPathModifList))
+      //console.log(JSON.stringify(keyPathModifList))
 
       this.$store.dispatch("updateKeyPathModifList", keyPathModifList)
       this.showMsg({

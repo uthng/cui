@@ -163,7 +163,7 @@ export default {
   data: function() {
     return {
       //open: this.currentDepth < this.maxDepth,
-      open: this.currentDepth <= 3,
+      open: this.currentDepth <= 0,
       dialogDeleteKeyPath: false,
       dialogCreateKeyPath: false,
       dialogCloneKeyPath: false,
@@ -260,6 +260,9 @@ export default {
       return this.open
     },
     toggleOpen: function() {
+      if (!this.open) {
+        this.$root.$emit("load-key-path", this.path)
+      }
       this.open = !this.open
     },
     isObject: function(value) {
