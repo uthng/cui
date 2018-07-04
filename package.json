@@ -21,7 +21,7 @@
     "toastr": "^2.1.4",
     "vue-eslint-parser": "^2.0.3",
     "vue-notifications": "^0.9.0",
-    "vuetify": "^1.1.0",
+    "vuetify": "^1.1.1",
     "vuex-persistedstate": "^2.5.4"
   },
   "devDependencies": {

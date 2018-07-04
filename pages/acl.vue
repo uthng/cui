@@ -37,11 +37,10 @@
                 />
               </v-flex>
               <v-flex xs12>
-                <v-text-field
+                <v-textarea
                   v-model="editedItem.Rules"
                   name="aclRule"
                   label="Rules:"
-                  multi-line
                   row="10"
                 />
               </v-flex>
